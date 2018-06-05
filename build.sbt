@@ -64,6 +64,8 @@ lazy val coverageSettings = {
   )
 }
 
+val Log4jVersion = "2.7"
+
 lazy val `scala-kafka` = (project in file("."))
   .settings(
     commonSettings,
@@ -76,7 +78,14 @@ lazy val `scala-kafka` = (project in file("."))
     projectUrls,
     coverageSettings,
 
-    libraryDependencies ++= Dependencies.logging ++ Dependencies.testing ++
-                            Dependencies.kafka ++ Dependencies.zookeeper ++ Dependencies.preconditions
+    libraryDependencies ++= /*Dependencies.logging*/ Dependencies.testing ++
+                            Dependencies.kafka ++ Dependencies.zookeeper ++ Dependencies.preconditions ++
+    Seq(
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
+      "org.slf4j" % "jcl-over-slf4j" % "1.7.21",
+      "org.apache.logging.log4j" % "log4j-slf4j-impl" % Log4jVersion,
+      "org.apache.logging.log4j" % "log4j-api" % Log4jVersion,
+      "org.apache.logging.log4j" % "log4j-core" % Log4jVersion
+    )
   )
 

@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package ars.kafka.consumer.config
+package ars.kafka.config
 
-import ars.precondition.implicits._
-import ars.precondition.require.Require.Default._
-
-/** Server config part.
+/** The compression type.
   *
-  * @param host the host (must be non-blank)
-  * @param port the port (must be in range [0, 0xffff])
+  * @param value the value for configuration
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-case class Server(host: String, port: Int) {
-  requireNotBlank(host, "host")
-  requireNumberInRange(port, 0.inclusive, 0xffff.inclusive, "port")
-}
-object Server {
-  final val DefaultLocalServer = Server("localhost", 9092)
+class CompressionType(val value: String)
+object CompressionTypes {
+  final case object None extends CompressionType("none")
+  final case object GZip extends CompressionType("gzip")
+  final case object Snappy extends CompressionType("snappy")
+  final case object Lz4 extends CompressionType("lz4")
 }

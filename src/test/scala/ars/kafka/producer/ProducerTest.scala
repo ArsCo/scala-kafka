@@ -16,48 +16,22 @@
 
 package ars.kafka.producer
 
-import ars.kafka.producer.config.ProducerConfig
+import ars.kafka.AbstractBaseTest
 
-/** The single thread blocking Kafka producer.
+/** Tests for [[Producer]].
   *
-  * @tparam K the key type
-  * @tparam V the value type
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait SingleThreadProducer[K, V] {
-
-  /**
-    * Starts the producer.
-    *
-    *
-    * @throws IllegalStateException if producer already started
-    */
-  def start(): Unit
-
-  /**
-    * Stops the producer.
-    *
-    * @throws IllegalStateException if producer already stopping ([[stop()]] method already
-    *                               was called or [[start()]] method was not called yet).
-    */
-  def stop(): Unit
-
-  /**
-    * @return configuration (non-null)
-    */
-  def config: ProducerConfig
-
-
+class ProducerTest extends AbstractBaseTest {
 
 }
 
 
 
-
 //def runProducer(key: String, text: String): Unit = {
 //
-//  import ars.kafka.producer.config.ProducerConfig
+//  import ars.kafka.config.ProducerConfig
 //
 //  val props = new Properties()
 //  props.put("bootstrap.servers", "localhost:9092")
@@ -82,3 +56,15 @@ trait SingleThreadProducer[K, V] {
 //  producer.close()
 //}
 //}
+
+
+//  def protect(block: => SingleThreadProducer[K, V] => Unit): Unit = {
+//    try {
+//      block(this)
+//    } catch {
+//      case e: Exception =>
+//
+//    } finally {
+//      this.close()
+//    }
+//  }

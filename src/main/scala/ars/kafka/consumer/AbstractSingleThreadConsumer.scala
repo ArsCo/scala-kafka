@@ -16,13 +16,11 @@
 
 package ars.kafka.consumer
 
-import ars.kafka.consumer.AbstractSingleThreadConsumer._
-import ars.kafka.consumer.config.ConsumerConfig
-import ars.kafka.util.KafkaUtils
+import ars.kafka.config.ConsumerConfig
+import ars.kafka.consumer.SingleThreadConsumer._
 import ars.precondition.require.Require.Default._
 import com.typesafe.scalalogging.Logger
-import org.apache.kafka.clients.consumer.{ConsumerRecords, KafkaConsumer}
-import org.apache.kafka.common.KafkaException
+import org.apache.kafka.clients.consumer.KafkaConsumer
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
@@ -41,20 +39,14 @@ import scala.concurrent.duration._
   * @since 0.0.1
   */
 abstract class AbstractSingleThreadConsumer[K, V](
-    override val config: ConsumerConfig,
+    config: ConsumerConfig,
     topics: Seq[String],
     timeout: Duration = DefaultPollingTimeout.microsecond
-) extends SingleThreadConsumer[K, V] {
+) extends AbstractCommonSingleThreadConsumer[K, V](config) {
 
   requireNotNull(config, "config")
   requireNotBlank(topics, "topics")
   requireNotNull(timeout, "timeout")
-
-  @volatile
-  private var isStop = false
-
-  @volatile
-  private var wasStarted = false
 
   /**
     * @param config the configuration (must be non-null)
@@ -69,95 +61,24 @@ abstract class AbstractSingleThreadConsumer[K, V](
     */
   def this(config: ConsumerConfig, topic: String) = this(config, Seq(topic),  DefaultPollingTimeout.microsecond)
 
-
   /** @inheritdoc */
-  override def start(): Unit = {
-    if (wasStarted) throw new IllegalStateException("Already was started.")
-    wasStarted = true
+  override def subscribe(consumer: KafkaConsumer[K, V]): Unit = {
+    requireNotNull(consumer, "consumer")
 
-    val consumer = createConsumer(config)
-    try {
-      subscribe(consumer, topics)
-      while (!isStop) processNext(consumer)
-
-    } catch {
-      case e: Exception => handleUnexpectedException(e)
-
-    } finally {
-      tryCloseTolerant(consumer)
-    }
-  }
-
-  /** @inheritdoc */
-  override def process(records: ConsumerRecords[K, V]): Boolean = {
-    for (record <- records.asScala) {
-      try {
-        val isSuccess = process(record)
-        if (!isSuccess) return false
-      } catch {
-        case e: Exception =>
-          logger.error("The `processor` MUST NOT throw an exception:", e)
-          return false
-      }
-    }
-    true
-  }
-
-  /** @inheritdoc */
-  override def stop(): Unit = {
-    if (!wasStarted) throw new IllegalStateException("Not started yet.")
-    isStop = true
+    subscribe(consumer, topics)
   }
 
   /** @inheritdoc */
   override def pollTimeout: Duration = timeout
 
-  private[kafka] def handleUnexpectedException(e: Exception): Unit = {
-    logger.error("There's an unexpected exception was thrown.", e)
-  }
-
-  private[kafka] def createConsumer(config: ConsumerConfig): KafkaConsumer[K, V] = {
-    val consumer = new KafkaConsumer[K, V](KafkaUtils.toProps(config.all))
-    logger.info("New consumer instance was created.")
-    consumer
-  }
-
   private[kafka] def subscribe(consumer: KafkaConsumer[K, V], topics: Seq[String]): Unit = {
+    requireNotNull(consumer, "consumer")
+    requireNotBlank(topics, "topics")
+    requireAllNotBlank(topics, "topics")
+
     consumer.subscribe(topics.asJavaCollection)
     logger.info(s"Consumer have subscribed the topics [${topics.mkString(",")}].")
   }
 
-  private[kafka] def processNext(consumer: KafkaConsumer[K, V]): Unit = {
-    val records = pollRecords(consumer)
-    val isSuccess = process(records)
-    if (isSuccess) consumer.commitSync()
-  }
-
-  private[kafka] def pollRecords(consumer: KafkaConsumer[K, V]): ConsumerRecords[K, V] = {
-    consumer.poll(pollTimeout.toMillis)
-  }
-
-  private[kafka] def tryClose(consumer: KafkaConsumer[K, V]): Boolean = {
-    try {
-      consumer.close()
-      true
-    } catch {
-      case e: KafkaException =>
-        logger.error("Error while trying to close consumer.", e)
-        false
-    }
-  }
-
-  private[kafka] def tryCloseTolerant(consumer: KafkaConsumer[K, V]): Unit = {
-    !tryClose(consumer) && tryClose(consumer) // Close consumer (try twice)
-    logger.error("The consuming was stopped.")
-  }
-
-  private def logger = Logger[AbstractSingleThreadConsumer[_, _]]
-}
-
-object AbstractSingleThreadConsumer {
-
-  /** Default consumer polling timeout. */
-  val DefaultPollingTimeout = 3000
+  private[this] final val logger = Logger[AbstractSingleThreadConsumer[_, _]]
 }

@@ -25,12 +25,12 @@ import ars.kafka.consumer.SingleThreadConsumer
   */
 class SingleThreadConsumerTest extends AbstractBaseTest {
 
-  "SingleThreadConsumer" must "have correct interface" in {
-    new SingleThreadConsumer[String, String] {
-      override def start(): Unit = ???
-      override def stop(): Unit = ???
-      override def config: Map[String, Any] = ???
-      override def pollTimeout(timeout: Long): Unit = ???
-    }
-  }
+//  "SingleThreadConsumer" must "have correct interface" in {
+//    new SingleThreadConsumer[String, String] {
+//      override def start(): Unit = ???
+//      override def stop(): Unit = ???
+//      override def config: Map[String, Any] = ???
+//      override def pollTimeout(timeout: Long): Unit = ???
+//    }
+//  }
 }

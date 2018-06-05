@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package ars.kafka.consumer.config
+package ars.kafka.config
 
 import ars.precondition.require.Require.Default._
 
-/** Kafka consumer configuration.
+/**
+  *
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1

@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.config
+package ars.kafka.producer
 
-/**
-  * The compression type.
-  *
-  * @param value the value for configuration
+import org.scalatest.Suites
+
+/** All tests for package `ars.kafka.producer`.
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class CompressionType(val value: String)
-object CompressionTypes {
-  final case object None extends CompressionType("none")
-  final case object GZip extends CompressionType("gzip")
-  final case object Snappy extends CompressionType("snappy")
-  final case object Lz4 extends CompressionType("lz4")
-}
+class AllPackageTests extends Suites(
+  new ProducerTest,
+  new PackerTest,
+  new DefaultProducerTest
+
+)

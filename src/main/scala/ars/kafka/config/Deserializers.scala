@@ -14,31 +14,35 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.config
+package ars.kafka.config
 
 import ars.precondition.require.Require.Default._
 
-/** Serializers config part.
+/** Deserializers config part.
   *
-  * @param key the key serializer full class name (must be non-blank)
+  * @param key the key deserializer full class name (must be non-blank)
   *            Sets consumer `key.deserializer` parameter.
-  * @param value the value serializer full class name (must be non-blank)
+  * @param value the value deserializer full class name (must be non-blank)
   *              Sets consumer `value.deserializer` parameter.
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-case class Serializers(key: String, value: String) {
+case class Deserializers(key: String, value: String) {
   requireNotBlank(key, "key")
   requireNotBlank(value, "value")
 }
-object Serializers {
+object Deserializers {
 
-  /**
-    * Byre buffer deserializer full class name.
-    */
-  final val ByteBufferSerializer = "org.apache.kafka.common.serialization.ByteBufferSerializer"
+  /** Byte buffer deserializer full class name. */
+  final val ByteBufferDeserializer = "org.apache.kafka.common.serialization.ByteBufferDeserializer"
 
+  /** Byte deserializer full class name. */
+  final val ByteDeserializer = "org.apache.kafka.common.serialization.ByteBufferDeserializer"
 
-  final val ByteBufferSerializers = Serializers(ByteBufferSerializer, ByteBufferSerializer)
+  /** Byte buffer [[Deserializers]] for key and value. */
+  final val ByteBufferDeserializers = Deserializers(ByteBufferDeserializer, ByteBufferDeserializer)
+
+  /** Byte [[Deserializers]] for key and value. */
+  final val ByteDeserializers = Deserializers(ByteDeserializer, ByteDeserializer)
 }

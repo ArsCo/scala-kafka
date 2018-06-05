@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
-package ars.kafka
+package ars.kafka.config
 
-import org.scalatest.Suites
+import ars.precondition.implicits._
+import ars.precondition.require.Require.Default._
 
-/** All tests for package `ars.kafka`.
+/** Server config part.
+  *
+  * @param host the host (must be non-blank)
+  * @param port the port (must be in range [0, 0xffff])
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AllPackageTests extends Suites(
-  new SingleThreadConsumerTest
-//  new AbstractSingleThreadConsumerTest
-)
+case class Server(host: String, port: Int) {
+  requireNotBlank(host, "host")
+  requireNumberInRange(port, 0.inclusive, 0xffff.inclusive, "port")
+}
+object Server {
+  final val DefaultLocalServer = Server("localhost", 9092)
+}

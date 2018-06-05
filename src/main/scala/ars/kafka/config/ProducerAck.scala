@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package ars.kafka
+package ars.kafka.config
 
-import org.scalatest.Suites
-
-/** All tests for package `ars.kafka`.
+/**
+  * The ack.
+  *
+  * @param value the value for configuration
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AllPackageTests extends Suites(
-  new SingleThreadConsumerTest
-//  new AbstractSingleThreadConsumerTest
-)
+class ProducerAck(val value: String)
+object ProducerAcks {
+  final case object NotWait extends ProducerAck("0")
+  final case object LeaderOnly extends ProducerAck("1")
+  final case object All extends ProducerAck("all")
+}

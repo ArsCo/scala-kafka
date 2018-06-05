@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.config
+package ars.kafka.config
+
+import ars.precondition.require.Require.Default._
 
 /**
-  * The ack.
   *
-  * @param value the value for configuration
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class ProducerAck(val value: String)
-object ProducerAcks {
-  final case object NotWait extends ProducerAck("0")
-  final case object LeaderOnly extends ProducerAck("1")
-  final case object All extends ProducerAck("all")
+case class Ssl(location: String, password: String) {
+  requireNotBlank(location, "location")
+  requireNotBlank(password, "password")
 }

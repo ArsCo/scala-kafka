@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package ars.kafka.consumer.config
+package ars.kafka.config
 
-import ars.kafka.consumer.config.Deserializers.ByteBufferDeserializers
-import ars.kafka.consumer.config.Server.DefaultLocalServer
+import ars.kafka.config.Deserializers.ByteBufferDeserializers
+import ars.kafka.config.Server.DefaultLocalServer
 
 
 /** Kafka consumer configuration.
@@ -25,7 +25,7 @@ import ars.kafka.consumer.config.Server.DefaultLocalServer
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait ConsumerConfig {
+trait ConsumerConfig extends CommonConfig {
 
   /**
     * Gets deserializers.
@@ -85,38 +85,29 @@ trait ConsumerConfig {
   def autoCommit: Option[Boolean] = None
 
   /**
-    * Gets all params that has no explicit getter methods as a map of key/value pairs.
-    *
-    * @return the map containing all params that has no explicit getter methods (non-null)
-    */
-  def raw: Map[String, Any] = Map()
-
-  /**
     * Gets all params as a map of key/value pairs.
     *
     * @return the map containing all params (non-null)
     */
-  def all: Map[String, Any] = {
-    toMap(deserializers) ++ toMap(bootstrapServers) ++ Map("group.id" -> groupId) ++
-      minFetchBytes.map("fetch.min.bytes" -> _) ++
-      heartbeatInterval.map("heartbeat.interval.ms" -> _) ++
-      maxPartitionFetchBytes.map("max.partition.fetch.bytes" -> _) ++
-      sessionTimeout.map("session.timeout.ms" -> _) ++
-      autoCommit.map("enable.auto.commit" -> _) ++
-      raw
+  override def all: Map[String, Any] = {
+
+    val required = toMap(deserializers) ++ toMap(bootstrapServers :_*) + ("group.id" -> groupId)
+
+    val optional = optionalsToMap(
+      ("fetch.min.bytes", minFetchBytes),
+      ("heartbeat.interval.ms", heartbeatInterval),
+      ("max.partition.fetch.bytes", maxPartitionFetchBytes),
+      ("session.timeout.ms", sessionTimeout),
+      ("enable.auto.commit", autoCommit)
+    )
+
+    super.all ++ required ++ optional
   }
 
   private def toMap(deserializers: Deserializers): Map[String, Any] = {
     Map(
       "key.deserializer" -> deserializers.key,
       "value.deserializer" -> deserializers.value
-    )
-  }
-
-  private def toMap(servers: Seq[Server]): Map[String, Any] = {
-    val serversString = servers.map { case Server(h, p) => s"$h:$p" }.mkString(",")
-    Map(
-      "bootstrap.servers" -> serversString
     )
   }
 }
@@ -126,12 +117,12 @@ object ConsumerConfig {
   final val DefaultGroupId = "default-group"
 
   /**
-    * Creates local consumer Kafka configuration.
+    * Creates local Kafka consumer configuration.
     *
     * @param deserializers the deserializers (non-null).
     *                      By default it uses binary deserializers for both key and value.
     * @param bootstrapServers the bootstrap servers (non-blank)
-    *                         By default it uses `localhost:`
+    *                         By default it uses `localhost:9092`
     * @param groupId the group id (non-blank)
     *                By default it uses string `defaultGroup`
     *

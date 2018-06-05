@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package ars.kafka
+package ars.kafka.config
 
-import org.scalatest.Suites
+import ars.kafka.AbstractBaseTest
 
-/** All tests for package `ars.kafka`.
+/** Tests for [[ProducerConfig]]
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AllPackageTests extends Suites(
-  new SingleThreadConsumerTest
-//  new AbstractSingleThreadConsumerTest
-)
+class ProducerConfigTest extends AbstractBaseTest {
+
+}

@@ -16,8 +16,8 @@
 
 package ars.kafka.consumer
 
-import ars.kafka.consumer.config.ConsumerConfig
-import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords}
+import ars.kafka.config.ConsumerConfig
+import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, KafkaConsumer}
 
 import scala.concurrent.duration.Duration
 
@@ -32,6 +32,7 @@ import scala.concurrent.duration.Duration
   */
 trait SingleThreadConsumer[K, V] {
 
+  // TODO Verify algorithm!!!
   /**
     * Starts the consumer.
     *
@@ -72,9 +73,27 @@ trait SingleThreadConsumer[K, V] {
   def stop(): Unit
 
   /**
-    * @return configuration (non-null)
+    * Creates new consumer.
+    *
+    * @param config the consumer configuration (must be non-null)
+    *
+    * @return the new consumer
     */
-  def config: ConsumerConfig
+  def createConsumer(config: ConsumerConfig): KafkaConsumer[K, V]
+
+  /**
+    * Subscribes consumer to topic(s).
+    *
+    * @param consumer the consumer (must be non-null)
+    */
+  def subscribe(consumer: KafkaConsumer[K, V]): Unit
+
+  /**
+    * Gets the next portion of messages from kafka and process
+    *
+    * @param consumer the consumer (must be non-null)
+    */
+  def process(consumer: KafkaConsumer[K, V]): Unit
 
   /** Processes consumed records. If This method returns `false` then [[process()]]
     * will not be called, otherwise [[process()]] method will be called for each
@@ -97,10 +116,43 @@ trait SingleThreadConsumer[K, V] {
     */
   def process(record: ConsumerRecord[K, V]): Boolean
 
+  /** Handles unexpected exceptions.
+    *
+    * @param exception the handling exception (must be non-null)
+    */
+  def handleUnexpectedException(exception: Exception): Unit
+
+  /**
+    * Closes consumer.
+    *
+    * @param consumer the consumer (must be non-null)
+    */
+  def close(consumer: KafkaConsumer[K, V]): Unit
+
+  /**
+    * @return configuration (non-null)
+    */
+  def config: ConsumerConfig
+
   /**
     * Gets the polling timeout. It can be used to dynamically change polling frequency.
     *
     * @return the timeout duration (non-null)
     */
   def pollTimeout: Duration
+
+  /**
+    * Gets underling native [[KafkaConsumer]] instance.
+    *
+    * @throws IllegalStateException if consumer calling when consumer was not started or have bean stopped
+    *
+    * @return the consumer (non-null)
+    */
+  def nativeConsumer: KafkaConsumer[K, V]
+}
+
+object SingleThreadConsumer {
+
+  /** Default consumer polling timeout. */
+  val DefaultPollingTimeout = 500000
 }

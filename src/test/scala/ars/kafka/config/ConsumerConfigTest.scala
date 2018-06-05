@@ -14,16 +14,29 @@
  * limitations under the License.
  */
 
-package ars.kafka
+package ars.kafka.config
 
-import org.scalatest.Suites
+import ars.kafka.AbstractBaseTest
 
-/** All tests for package `ars.kafka`.
+/** Tests for [[ConsumerConfig]]
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AllPackageTests extends Suites(
-  new SingleThreadConsumerTest
-//  new AbstractSingleThreadConsumerTest
-)
+class ConsumerConfigTest extends AbstractBaseTest {
+
+  private val c = new ConsumerConfig {
+
+    override def deserializers: Deserializers = ???
+    override def bootstrapServers: Seq[Server] = ???
+    override def groupId: String = ???
+  }
+
+  "ConsumerConfig" must "have correct interface" in {
+    assertResult(None)(c.minFetchBytes)
+    assertResult(None)(c.heartbeatInterval)
+    assertResult(None)(c.maxPartitionFetchBytes)
+    assertResult(None)(c.sessionTimeout)
+    assertResult(None)(c.autoCommit)
+  }
+}
