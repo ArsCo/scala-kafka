@@ -37,12 +37,12 @@ object Serializers {
   /** Byte buffer serializer full class name. */
   final val ByteBufferSerializer = "org.apache.kafka.common.serialization.ByteBufferSerializer"
 
-  /** Byte serializer full class name. */
-  final val ByteSerializer = "org.apache.kafka.common.serialization.ByteSerializer"
+  /** Byte array serializer full class name. */
+  final val ByteArraySerializer = "org.apache.kafka.common.serialization.ByteArraySerializer"
 
   /** Byte buffer [[Serializers]] for key and value. */
   final val ByteBufferSerializers = Serializers(ByteBufferSerializer, ByteBufferSerializer)
 
-  /** Byte [[Serializers]] for key and value. */
-  final val ByteSerializers = Serializers(ByteSerializer, ByteSerializer)
+  /** Byte array [[Serializers]] for key and value. */
+  final val ByteArraySerializers = Serializers(ByteArraySerializer, ByteArraySerializer)
 }

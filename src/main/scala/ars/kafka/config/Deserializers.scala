@@ -37,12 +37,12 @@ object Deserializers {
   /** Byte buffer deserializer full class name. */
   final val ByteBufferDeserializer = "org.apache.kafka.common.serialization.ByteBufferDeserializer"
 
-  /** Byte deserializer full class name. */
-  final val ByteDeserializer = "org.apache.kafka.common.serialization.ByteBufferDeserializer"
+  /** Byte array deserializer full class name. */
+  final val ByteArrayDeserializer = "org.apache.kafka.common.serialization.ByteArrayDeserializer"
 
   /** Byte buffer [[Deserializers]] for key and value. */
   final val ByteBufferDeserializers = Deserializers(ByteBufferDeserializer, ByteBufferDeserializer)
 
-  /** Byte [[Deserializers]] for key and value. */
-  final val ByteDeserializers = Deserializers(ByteDeserializer, ByteDeserializer)
+  /** Byte array [[Deserializers]] for key and value. */
+  final val ByteArrayDeserializers = Deserializers(ByteArrayDeserializer, ByteArrayDeserializer)
 }
