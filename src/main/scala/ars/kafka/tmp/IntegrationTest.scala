@@ -19,11 +19,15 @@ package ars.kafka.tmp
 import java.io._
 import java.nio.ByteBuffer
 import java.time.Instant
-import java.time.temporal.ChronoUnit
+import java.time.temporal.ChronoUnit.MINUTES
+import java.util.concurrent.{ExecutorService, Executors}
 
 import ars.kafka.config.{ConsumerConfig, ProducerConfig}
-import ars.kafka.consumer.{AbstractUnpackingSingleThreadConsumer, Unpacker}
-import ars.kafka.producer.{AbstractPackingProducer, Packer}
+import ars.kafka.consumer.retry.RetryPolicy
+import ars.kafka.consumer.{ProcessCompletionStatus, ProcessCompletionStatuses}
+import ars.kafka.consumer.unpack.{AbstractUnpackingConsumer, Unpacker}
+import ars.kafka.producer.pack.serialization.SimpleSerializationPacker
+import ars.kafka.producer.pack.{AbstractPackingProducer, Packer}
 
 import scala.util.{Failure, Success, Try}
 
@@ -42,30 +46,29 @@ object IntegrationTest {
 
   private[this] val producerConfig = ProducerConfig.defaultLocal()
 
-  private[this] val producer = new AbstractPackingProducer[String, ByteBuffer, TestMessage, ByteBuffer](
+  private[this] val producer = new AbstractPackingProducer[String, Array[Byte], TestMessage, ByteBuffer](
     producerConfig,
-    new Packer[String, ByteBuffer] {
-      override def pack(from: String): Try[ByteBuffer] = {
+    new SimpleSerializationPacker[String],
 
-        var ois: ObjectOutputStream = null
-        try {
-          val baos = new ByteArrayOutputStream(1)
-          ois = new ObjectOutputStream(baos)
-          ois.writeUTF(from)
-          ois.flush()
-          ois.flush()
-          ois.flush()
-          ois.flush()
-
-
-          val array = baos.toByteArray
-          Success(ByteBuffer.wrap(array))
-
-        } finally {
-          ois.close()
-        }
-      }
-    },
+//    new Packer[String, ByteBuffer] {
+//      override def pack(from: String): Try[ByteBuffer] = {
+//
+//        var ois: ObjectOutputStream = null
+//        try {
+//          val baos = new ByteArrayOutputStream(1)
+//          ois = new ObjectOutputStream(baos)
+//          ois.writeUTF(from)
+//          ois.flush()
+//
+//
+//          val array = baos.toByteArray
+//          Success(ByteBuffer.wrap(array))
+//
+//        } finally {
+//          ois.close()
+//        }
+//      }
+//    },
     new Packer[TestMessage, ByteBuffer] {
       override def pack(from: TestMessage): Try[ByteBuffer] = {
         var ois: ObjectOutputStream = null
@@ -73,9 +76,6 @@ object IntegrationTest {
           val baos = new ByteArrayOutputStream(1)
           ois = new ObjectOutputStream(baos)
           ois.writeObject(from)
-          ois.flush()
-          ois.flush()
-          ois.flush()
           ois.flush()
 
           Success(ByteBuffer.wrap(baos.toByteArray))
@@ -89,23 +89,25 @@ object IntegrationTest {
 
   private[this] val consumerConfig = ConsumerConfig.defaultLocal()
 
-  private[this] val consumer = new AbstractUnpackingSingleThreadConsumer[ByteBuffer, String, ByteBuffer, TestMessage](
+  private[this] val consumer = new AbstractUnpackingConsumer[ByteBuffer, String, ByteBuffer, TestMessage](
     consumerConfig,
     Seq(TestTopic),
     new Unpacker[ByteBuffer, String] {
       override def unpack(from: ByteBuffer): Try[String] = {
-        var ois: ObjectInputStream = null
-        try {
-
-          val bytes = from.array()
-          val baos = new ByteArrayInputStream(bytes)
-          ois = new ObjectInputStream(baos)
-          val s = ois.readUTF()
-          Success(s)
-
-        } finally {
-          ois.close()
-        }
+        //        var ois: ObjectInputStream = null
+        //        try {
+        //
+        //          val bytes = from.array()
+        //          val baos = new ByteArrayInputStream(bytes)
+        //          ois = new ObjectInputStream(baos)
+        //          val s = ois.readUTF()
+        //          Success(s)
+        //
+        //        } finally {
+        //          ois.close()
+        //        }
+        //      }
+        Success("dfsdf")
       }
     },
     new Unpacker[ByteBuffer, TestMessage] {
@@ -123,30 +125,81 @@ object IntegrationTest {
       }
     }
   ) {
-    override def processUnpacked(key: Option[String], value: TestMessage): Boolean = {
+    override def processUnpacked(key: Option[String], value: TestMessage): ProcessCompletionStatus = {
       println(s"Receive: '$key' -> '$value'")
-      true
+      ProcessCompletionStatuses.Success
     }
+
+    override def retryPolicy: RetryPolicy = ??? // TODO
   }
 
   def main(args: Array[String]): Unit = {
 
     import scala.concurrent.ExecutionContext.Implicits.global
 
+    Threads.inSingleThread { () => consumer.start() }
 
-    (0 until 20).foreach { i =>
-      val key = s"Key $i"
-      val message = TestMessage(s"My string $i", i, Instant.now().plus(i, ChronoUnit.MINUTES))
-      println(s"Send $i: '$key' -> '$message'")
-      producer.sendPacked(
-        TestTopic, None,
-        message
-      ).onComplete {
-        case Success(v) => println(v.topic() + " -> " + v.offset() + " -> " + v.timestamp())
-        case Failure(e) => println(e)
+    Threads.inSingleThread { () =>
+      (0 until 50).foreach { n =>
+        (0 until 20).foreach { i =>
+          val key = s"Key $i"
+          val message = TestMessage(s"My string $i", i, Instant.now().plus(i, MINUTES))
+          println(s"Send $i: '$key' -> '$message'")
+          producer.sendPacked(
+            TestTopic, None,
+            message
+          ).onComplete {
+            case Success(v) => println(v.topic() + " -> " + v.offset() + " -> " + v.timestamp())
+            case Failure(e) => println(e)
+          }
+        }
+        Thread.sleep(2000)
       }
     }
 
-    consumer.start()
+
+
+
+
+//    withExecutor(() => Executors.newSingleThreadExecutor()) { executor =>
+//
+//      executor.submit(
+//        new Runnable {
+//          override def run(): Unit = {
+//
+//          }
+//        }
+//      )
+//
+//
+//    }
+
+
+  }
+
+
+
+
+
+}
+
+
+object Threads {
+  def withExecutor(creator: => () => ExecutorService)(block: => () => Unit): Unit = {
+    var stp: ExecutorService  = null
+    try {
+      stp = creator()
+      stp.submit(new Runnable { override def run(): Unit = { block() } })
+    } finally { // TODO Catch Interrupted
+      if (stp != null) {
+        stp.shutdown()
+//        stp.awaitTermination(10, TimeUnit.MINUTES)
+      }
+    }
+  }
+
+  def
+  inSingleThread(block: => () => Unit): Unit = {
+    withExecutor(() => Executors.newSingleThreadExecutor())(block)
   }
 }

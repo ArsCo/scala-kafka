@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-package ars.kafka.consumer
+package ars.kafka.producer.pack
 
-/** Unpacking single thread consumer.
+import ars.kafka.config.ProducerConfig
+import ars.kafka.producer.DefaultProducer
+import ars.precondition.require.Require.Default._
+
+/** Producer that packs key and value before sending.
+  *
+  * @param config the configuration (must be non-null)
+  * @param keyPacker the key packer (must be non-null)
+  * @param valuePacker the value packer (must be non-null)
   *
   * @tparam Key the key type
   * @tparam SerKey the serialized key type
@@ -26,27 +34,13 @@ package ars.kafka.consumer
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait UnpackingSingleThreadConsumer[SerKey, Key, SerValue, Value] extends SingleThreadConsumer[SerKey, SerValue] {
+class AbstractPackingProducer[Key, SerKey, Value, SerValue](
+    config: ProducerConfig,
+    override val keyPacker: Packer[Key, SerKey],
+    override val valuePacker: Packer[Value, SerValue]
+) extends DefaultProducer[SerKey, SerValue](config) with PackingProducer[Key, SerKey, Value, SerValue] {
 
-  /** Key unpacker.
-    *
-    * @return the key unpacker (non-null)
-    */
-  def keyUnpacker: Unpacker[SerKey, Key]
-
-  /** Value unpacker.
-    *
-    * @return the value unpacker (non-null)
-    */
-  def valueUnpacker: Unpacker[SerValue, Value]
-
-  /**
-    * Processes unpacked `key` and `value`.
-    *
-    * @param key the key (must be non-null)
-    * @param value the value (must be non-null)
-    *
-    * @return `true` if records was processed successfully, and `false` otherwise
-    */
-  def processUnpacked(key: Option[Key], value: Value): Boolean
+  requireNotNull(keyPacker, "keyPacker")
+  requireNotNull(valuePacker, "valuePacker")
 }
+

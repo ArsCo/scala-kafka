@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer
+package ars.kafka.producer.pack.serialization
 
-import org.scalatest.Suites
+import ars.kafka.producer.pack.Packer
 
-/** All tests for package `ars.kafka.producer`.
+/**
+  *
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AllPackageTests extends Suites(
-
-
-)
+trait SerializationPacker[From] extends Packer[From, Array[Byte]]

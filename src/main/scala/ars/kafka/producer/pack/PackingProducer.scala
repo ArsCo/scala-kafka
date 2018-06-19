@@ -14,58 +14,63 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer
+package ars.kafka.producer.pack
 
-import ars.kafka.config.ProducerConfig
+import ars.kafka.producer.Producer
+import ars.precondition.require.Require.Default._
 import com.typesafe.scalalogging.Logger
-import org.apache.kafka.clients.producer.{ProducerRecord, RecordMetadata}
+import org.apache.kafka.clients.producer.RecordMetadata
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-import ars.precondition.require.Require.Default._
 
-/** Producer that packs key and value before sending.
+/** Packing producer.
   *
-  * @param config the configuration (must be non-null)
-  * @param keyPacker the key packer (must be non-null)
-  * @param valuePacker the value packer (must be non-null)
-  *
-  * @tparam Key the key type
-  * @tparam SerKey the serialized key type
-  * @tparam Value the value type
-  * @tparam SerValue the serialized value type
+  * @tparam Key the key type before packing
+  * @tparam Value the value type before packing
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AbstractPackingProducer[Key, SerKey, Value, SerValue](
-    config: ProducerConfig,
-    override val keyPacker: Packer[Key, SerKey],
-    override val valuePacker: Packer[Value, SerValue]
-) extends DefaultProducer[SerKey, SerValue](config) with PackingProducer[Key, SerKey, Value, SerValue] {
+trait PackingProducer[Key, SerKey, Value, SerValue] extends Producer[SerKey, SerValue] {
 
-  requireNotNull(keyPacker, "keyPacker")
-  requireNotNull(valuePacker, "valuePacker")
-
-
-  /** @inheritdoc */
-  override def createRecord(topic: String, key: Option[SerKey], value: SerValue): ProducerRecord[SerKey, SerValue] = {
-
-    super.createRecord(topic, key, value)
-  }
-
-  override def sendPacked(topic: String, key: Option[Key], value: Value): Future[RecordMetadata] = { // TODO To trait
+  /** Packs `key` with `keyPacker`, packs `value` with `valuePacker` and sends the record.
+    *
+    * @param topic the topic (must be non-blank)
+    * @param key the key (must be non-null)
+    * @param value the value (must be non-null)
+    *
+    * @return the future of result metadata (non-null)
+    */
+  def sendPacked(topic: String, key: Option[Key], value: Value): Future[RecordMetadata] = {
     requireNotNull(key, "key")
     requireAllNotNull(key, "key")
 
     key.map(sendKeyValue(topic, _, value)).getOrElse(sendValue(topic, value))
   }
 
-  override def sendPacked(topic: String, value: Value): Future[RecordMetadata] = {
-    sendPacked(topic, None, value)
-  }
+  /** Packs `value` with `valuePacker` and sends the record.
+    *
+    * @param topic the topic (must be non-blank)
+    * @param value the value (must be non-null)
+    *
+    * @return the future of result metadata (non-null)
+    */
+  def sendPacked(topic: String, value: Value): Future[RecordMetadata] = sendPacked(topic, None, value)
 
-  private def sendKeyValue(topic: String, sourceKey: Key, value: Value) = {
+  /** Key packer.
+    *
+    * @return the key packer (non-null)
+    */
+  def keyPacker: Packer[Key, SerKey]
+
+  /** Value packer.
+    *
+    * @return the value packer (non-null)
+    */
+  def valuePacker: Packer[Value, SerValue]
+
+  private[this] def sendKeyValue(topic: String, sourceKey: Key, value: Value) = {
     (packKey(sourceKey), packValue(value)) match {
       case (Success(k), Success(v)) =>
         logger.trace(s"Was packed: ($sourceKey, $value) => ($k, $v).")
@@ -90,7 +95,7 @@ class AbstractPackingProducer[Key, SerKey, Value, SerValue](
     }
   }
 
-  private def sendValue(topic: String, value: Value) = {
+  private[this] def sendValue(topic: String, value: Value) = {
     packValue(value) match {
       case Success(v) =>
         logger.trace(s"Was packed: (None, $value) => (null, $v).")
@@ -101,9 +106,8 @@ class AbstractPackingProducer[Key, SerKey, Value, SerValue](
     }
   }
 
-  private def packKey(key: Key) = keyPacker.pack(key)
-  private def packValue(value: Value) = valuePacker.pack(value)
+  private[this] def packKey(key: Key) = keyPacker.pack(key)
+  private[this] def packValue(value: Value) = valuePacker.pack(value)
 
-  private[this] def logger = Logger[AbstractPackingProducer[_, _, _, _]]
+  private[this] def logger = Logger[PackingProducer[_, _, _, _]]
 }
-

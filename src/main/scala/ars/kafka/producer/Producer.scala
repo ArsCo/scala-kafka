@@ -28,6 +28,7 @@ import scala.concurrent.Future
   *
   * @tparam K the key type
   * @tparam V the value type
+  *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
@@ -108,27 +109,26 @@ object Producer {
     */
   def withProducer[K, V](
       config: ProducerConfig,
-      creator: ProducerConfig => Producer[K,V] = (c: ProducerConfig) => new DefaultProducer[K,V](c)
+      creator: ProducerConfig => Producer[K, V] = (c: ProducerConfig) => new DefaultProducer[K,V](c)
   )(block: => Producer[K, V] => Unit): Unit = {
 
     requireNotNull(config, "config")
     requireNotNull(creator, "creator")
     requireNotNull(block , "block")
 
-    val producer = creator(config)
+    var producer: Producer[K,V] = null
     try {
+      producer = creator(config)
       block(producer)
     } catch {
       case e: Exception =>
         logger.error("Unexpected exception during execution. Producer will be closed carefully.", e)
     } finally {
-      producer.close()
+      if (producer != null) {
+        producer.close()
+      }
     }
   }
 
-  private def logger = Logger[Producer.type]
+  private[this] def logger = Logger[Producer.type]
 }
-
-
-
-

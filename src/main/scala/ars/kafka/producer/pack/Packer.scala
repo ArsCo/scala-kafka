@@ -14,16 +14,39 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer
+package ars.kafka.producer.pack
 
-import org.scalatest.Suites
+import scala.util.{Success, Try}
 
-/** All tests for package `ars.kafka.producer`.
+/** Packer.
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AllPackageTests extends Suites(
+trait Packer[From, To] {
 
+  /**
+    * Packs the `from` value of type [[From]] to serial type [[To]]
+    *
+    * @param from the from value (must be non-null).
+    *
+    * @return the result (non-null)
+    */
+  def pack(from: From): Try[To]
+}
 
-)
+object Packer {
+
+  /**
+    * Creates new identity packer. This unpacker do noting.
+    *
+    * @tparam T the type param
+    *
+    * @return the new identity unpacker (non-null)
+    */
+  def identityPacker[T](): Packer[T, T] = new Packer[T, T] {
+
+    /** @inheritdoc */
+    override def pack(from: T): Try[T] = Success(from)
+  }
+}

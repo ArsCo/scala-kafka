@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer
+package ars.kafka.producer.pack.serialization
 
-import org.scalatest.Suites
+import ars.kafka.config.ProducerConfig
+import ars.kafka.producer.pack.{AbstractPackingProducer, Packer}
 
-/** All tests for package `ars.kafka.producer`.
+/**
+  *
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AllPackageTests extends Suites(
-
-
-)
+class SerializationPackingProducer[Key <: AnyRef, Value <: AnyRef](
+    config: ProducerConfig,
+    override val keyPacker: Packer[Key, Array[Byte]] = new SimpleSerializationPacker[Key],
+    override val valuePacker: Packer[Value, Array[Byte]] = new SimpleSerializationPacker[Value]
+) extends AbstractPackingProducer[Key, Array[Byte], Value, Array[Byte]](config, keyPacker, valuePacker)

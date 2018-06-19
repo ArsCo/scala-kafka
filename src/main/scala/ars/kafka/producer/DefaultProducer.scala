@@ -101,4 +101,3 @@ class DefaultProducer[K, V](
 
   private def logger = Logger[DefaultProducer[_, _]]
 }
-

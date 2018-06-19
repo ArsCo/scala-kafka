@@ -16,37 +16,16 @@
 
 package ars.kafka.consumer
 
-import scala.util.{Success, Try}
-
-/** Unpacker.
+/** Processing completion status.
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait Unpacker[From, To] {
+abstract sealed class ProcessCompletionStatus(value: String)
 
-  /**
-    * Packs the `from` value of type [[From]] to serial type [[To]]
-    *
-    * @param from the from value. If `null` then do nothing and return `Success(null)`.
-    *
-    * @return the result (non-null)
-    */
-  def unpack(from: From): Try[To]
-}
-
-object Unpacker {
-
-  /**
-    * Creates new identity unpacker. This unpacker do noting.
-    *
-    * @tparam T the type param
-    *
-    * @return the new identity unpacker (non-null)
-    */
-  def identityUnpacker[T](): Unpacker[T, T] = new Unpacker[T, T] {
-
-    /** @inheritdoc */
-    override def unpack(from: T): Try[T] = Success(from)
-  }
+object ProcessCompletionStatuses {
+  final case object Skip extends ProcessCompletionStatus("skip")
+  final case object Success extends ProcessCompletionStatus("success")
+  final case object Retry extends ProcessCompletionStatus("retry")
+  final case object Policy extends ProcessCompletionStatus("policy") // TODO
 }

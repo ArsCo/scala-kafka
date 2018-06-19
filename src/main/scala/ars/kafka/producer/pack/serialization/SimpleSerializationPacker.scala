@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer
+package ars.kafka.producer.pack.serialization
 
-import org.scalatest.Suites
+import ars.kafka.util.SerializationUtils.serializeValue
 
-/** All tests for package `ars.kafka.producer`.
+import scala.util.Try
+
+/** Packs value to binary array by standard Java serialization.
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AllPackageTests extends Suites(
+class SimpleSerializationPacker[From <: AnyRef] extends SerializationPacker[From] {
 
-
-)
+  /**
+    * Packs the `from` value to standard Java serialization form.
+    *
+    * @param from the from value (must be non-null).
+    *
+    * @return the result (non-null)
+    */
+  override def pack(from: From): Try[Array[Byte]] = serializeValue(from)
+}

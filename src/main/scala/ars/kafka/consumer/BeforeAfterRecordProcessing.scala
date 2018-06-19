@@ -33,7 +33,7 @@ trait BeforeAfterRecordProcessing[K, V] extends SingleThreadConsumer[K, V] {
     *
     * @return `true` if record must be processed in [[process()]], and `false` otherwise
     */
-  def beforeProcess(record: ConsumerRecord[K, V]): Boolean
+  def beforeProcess(record: ConsumerRecord[K, V]): ProcessCompletionStatus
 
   /**
     * This method will be called before `record` processing
@@ -43,12 +43,25 @@ trait BeforeAfterRecordProcessing[K, V] extends SingleThreadConsumer[K, V] {
     *
     * @return `true` if record is consumed (must be committed), and `false` otherwise
     */
-  def afterProcess(record: ConsumerRecord[K, V]): Boolean
+  def afterProcess(record: ConsumerRecord[K, V]): ProcessCompletionStatus
 
   /** @inheritdoc */
-  abstract override def process(record: ConsumerRecord[K, V]): Boolean = {
-    if (!beforeProcess(record)) return false
-    if (!super.process(record)) return false
-    if (afterProcess(record)) true else false
+  abstract override def process(record: ConsumerRecord[K, V]): ProcessCompletionStatus = {
+
+    // TODO Algorithm
+    val beforeStatus = beforeProcess(record)
+    if (beforeStatus != ProcessCompletionStatuses.Success) return beforeStatus
+
+    val processStatus = super.process(record)
+    if (beforeStatus != ProcessCompletionStatuses.Success) return processStatus
+
+
+    val afterStatus = afterProcess(record)
+    return afterStatus
+
+
+//    if (!beforeProcess(record)) return false
+//    if (!super.process(record)) return false
+//    if (afterProcess(record)) true else false
   }
 }

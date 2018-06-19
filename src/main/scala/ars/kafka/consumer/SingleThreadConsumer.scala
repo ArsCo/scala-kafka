@@ -17,6 +17,7 @@
 package ars.kafka.consumer
 
 import ars.kafka.config.ConsumerConfig
+import ars.kafka.consumer.retry.RetryPolicy
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, KafkaConsumer}
 
 import scala.concurrent.duration.Duration
@@ -103,7 +104,7 @@ trait SingleThreadConsumer[K, V] {
     *
     * @return `true` if records must be processed in [[process()]], and `false` otherwise
     */
-  def process(records: ConsumerRecords[K, V]): Boolean
+  def process(records: ConsumerRecords[K, V]): Boolean // TODO: ProcessCompletionStatus
 
   /**
     * Processes record. If This method returns `false` then all records from previous call of
@@ -114,7 +115,7 @@ trait SingleThreadConsumer[K, V] {
     *
     * @return `true` if record was processed successfully, and `false` otherwise.
     */
-  def process(record: ConsumerRecord[K, V]): Boolean
+  def process(record: ConsumerRecord[K, V]): ProcessCompletionStatus
 
   /** Handles unexpected exceptions.
     *
@@ -149,6 +150,13 @@ trait SingleThreadConsumer[K, V] {
     * @return the consumer (non-null)
     */
   def nativeConsumer: KafkaConsumer[K, V]
+
+  /**
+    * Gets retry policy.
+    *
+    * @return the retry policy (non-null)
+    */
+  def retryPolicy: RetryPolicy
 }
 
 object SingleThreadConsumer {

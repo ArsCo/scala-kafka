@@ -16,17 +16,28 @@
 
 package ars.kafka.config
 
+import scala.util.{Failure, Success, Try}
+
 /** The compression type.
   *
-  * @param value the value for configuration
+  * @param code the value for configuration
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class CompressionType(val value: String)
+class CompressionType(val code: String)
+
 object CompressionTypes {
   final case object None extends CompressionType("none")
   final case object GZip extends CompressionType("gzip")
   final case object Snappy extends CompressionType("snappy")
   final case object Lz4 extends CompressionType("lz4")
+
+  val allValues: Seq[CompressionType] = Seq(None, GZip, Snappy, Lz4)
+
+  def valueOf(value: String): Try[CompressionType] = {
+    val result = allValues.filter(_.code == value)
+    if (result.isEmpty) Failure(new IllegalArgumentException(s"Unknown CompressionType with code '$value'"))
+    else Success(result.head)
+  }
 }

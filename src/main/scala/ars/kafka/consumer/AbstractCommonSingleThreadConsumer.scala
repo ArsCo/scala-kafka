@@ -17,12 +17,13 @@
 package ars.kafka.consumer
 
 import ars.kafka.config.ConsumerConfig
+import ars.kafka.consumer.ProcessCompletionStatuses.{Retry, Skip, Success}
 import ars.kafka.consumer.SingleThreadConsumer.DefaultPollingTimeout
 import ars.kafka.util.KafkaUtils
 import ars.precondition.require.Require.Default._
 import com.typesafe.scalalogging.Logger
-import org.apache.kafka.clients.consumer.{ConsumerRecords, KafkaConsumer}
-import org.apache.kafka.common.KafkaException
+import org.apache.kafka.clients.consumer.{ConsumerRecords, KafkaConsumer, OffsetAndMetadata}
+import org.apache.kafka.common.{KafkaException, TopicPartition}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
@@ -88,11 +89,15 @@ abstract class AbstractCommonSingleThreadConsumer[K, V](
   }
 
   /** @inheritdoc */
-  override def process(records: ConsumerRecords[K, V]): Boolean = {
+  override def process(records: ConsumerRecords[K, V]): Boolean = { // TODO: ProcessCompletionStatus
     for (record <- records.asScala) {
       try {
-        val isSuccess = process(record)
-        if (!isSuccess) return false
+        process(record) match {
+          case Retry => return false
+          case Skip => return false
+          case Success => // do nothing
+        }
+//        if (!completionStatus) return false
       } catch {
         case e: Exception =>
           logger.error("The `processor` MUST NOT throw an exception:", e)
@@ -116,6 +121,25 @@ abstract class AbstractCommonSingleThreadConsumer[K, V](
     val records = pollRecords(consumer)
     val isSuccess = process(records)
     if (isSuccess) consumer.commitSync()
+  }
+
+
+  private[this] def commitAll(records: ConsumerRecords[K, V]): Unit = { // TODO: Change to use retry policy
+    val maxOffset = records.asScala.map(_.offset()).max
+    commitInfo(maxOffset)
+  }
+
+
+  private[this] def firstAssignedTopic(): TopicPartition = {
+    val iterator = consumer.assignment().iterator()
+    if (iterator.hasNext) iterator.next()
+    else throw new IllegalStateException("No assigned partitions.")
+  }
+
+  private[this] def commitInfo(offset: Long): Map[TopicPartition, OffsetAndMetadata] = {
+    Map(
+      firstAssignedTopic() -> new OffsetAndMetadata(offset)
+    )
   }
 
   /** @inheritdoc */

@@ -14,50 +14,57 @@
  * limitations under the License.
  */
 
-package ars.kafka.consumer
+package ars.kafka.consumer.unpack
 
-import ars.kafka.config.ConsumerConfig
-import ars.kafka.consumer.SingleThreadConsumer.DefaultPollingTimeout
+import ars.kafka.consumer.{ProcessCompletionStatus, ProcessCompletionStatuses, SingleThreadConsumer}
 import com.typesafe.scalalogging.Logger
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
-import scala.concurrent.duration.{Duration, _}
 import scala.util.{Failure, Success}
 
-/** Consumer that unpacks key and value before processing.
-  *
-  * @param config the configuration (must be non-null)
-  * @param topics the sequence of topic names (must be non-blank)
-  * @param keyUnpacker the key unpacker (must be non-null)
-  * @param valueUnpacker the value unpacker (must be non-null)
-  * @param timeout the initial polling timeout (must be positive)
+/** Unpacking single thread consumer.
   *
   * @tparam Key the key type
   * @tparam SerKey the serialized key type
   * @tparam Value the value type
   * @tparam SerValue the serialized value type
-  *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-abstract class AbstractUnpackingSingleThreadConsumer[SerKey, Key, SerValue, Value](
-    config: ConsumerConfig,
-    topics: Seq[String],
-    override val keyUnpacker: Unpacker[SerKey, Key],
-    override val valueUnpacker: Unpacker[SerValue, Value],
-    timeout: Duration = DefaultPollingTimeout.microsecond
-) extends AbstractSingleThreadConsumer[SerKey, SerValue](config, topics, timeout)
-  with UnpackingSingleThreadConsumer[SerKey, Key, SerValue, Value] {
+trait UnpackingConsumer[SerKey, Key, SerValue, Value] extends SingleThreadConsumer[SerKey, SerValue] {
+
+  /** Key unpacker.
+    *
+    * @return the key unpacker (non-null)
+    */
+  def keyUnpacker: Unpacker[SerKey, Key]
+
+  /** Value unpacker.
+    *
+    * @return the value unpacker (non-null)
+    */
+  def valueUnpacker: Unpacker[SerValue, Value]
+
+  /**
+    * Processes unpacked `key` and `value`.
+    *
+    * @param key the key (must be non-null)
+    * @param value the value (must be non-null)
+    *
+    * @return `true` if records was processed successfully, and `false` otherwise
+    */
+  def processUnpacked(key: Option[Key], value: Value): ProcessCompletionStatus
+
 
   /** @inheritdoc*/
-  override def process(record: ConsumerRecord[SerKey, SerValue]): Boolean = {
+  override def process(record: ConsumerRecord[SerKey, SerValue]): ProcessCompletionStatus = {
     val serValue = record.value()
     Option(record.key())
       .map(processKeyValue(_, serValue))
       .getOrElse(processValue(serValue))
   }
 
-  private def processKeyValue(serKey: SerKey, serValue: SerValue) = {
+  private def processKeyValue(serKey: SerKey, serValue: SerValue): ProcessCompletionStatus = {
     (unpackKey(serKey), unpackValue(serValue)) match {
       case (Success(k), Success(v)) =>
         logger.debug(s"Was unpacked: ($serKey, $serValue) => ($k, $v).")
@@ -65,38 +72,34 @@ abstract class AbstractUnpackingSingleThreadConsumer[SerKey, Key, SerValue, Valu
 
       case (Failure(e), Success(_)) =>
         logger.error(s"Key unpacking was failed for '$serKey'", e)
-        false
+        ProcessCompletionStatuses.Skip // TODO
 
       case (Success(_), Failure(e)) =>
         logger.error(s"Value unpacking was failed for '$serValue'", e)
-        false
+        ProcessCompletionStatuses.Skip // TODO
 
       case (Failure(ke), Failure(ve)) =>
         logger.error(s"Key packing was failed for '$serKey'", ke)
         logger.error(s"Value packing was failed for '$serValue'", ve)
-        false
+        ProcessCompletionStatuses.Skip // TODO
 
       case _ =>
         logger.error(s"Unexpected behaviour: key='$serKey', value='$serValue'")
-        false
+        ProcessCompletionStatuses.Skip // TODO
     }
   }
 
- override def processUnpacked(key: Option[Key], value: Value): Boolean
-
-  private def processValue(serValue: SerValue) = {
+  private def processValue(serValue: SerValue): ProcessCompletionStatus = {
     unpackValue(serValue) match {
       case Success(v) => processUnpacked(None, v)
       case Failure(e) =>
         logger.error(s"Value unpacking was failed for '$serValue'", e)
-        false
+        ProcessCompletionStatuses.Skip // TODO
     }
   }
 
   private def unpackKey(key: SerKey) = keyUnpacker.unpack(key)
   private def unpackValue(value: SerValue) = valueUnpacker.unpack(value)
 
-
-
-  private def logger = Logger[AbstractUnpackingSingleThreadConsumer[_, _, _, _]]
+  private def logger = Logger[UnpackingConsumer[_, _, _, _]]
 }

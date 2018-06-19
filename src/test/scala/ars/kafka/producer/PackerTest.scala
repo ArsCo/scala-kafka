@@ -18,6 +18,7 @@ package ars.kafka.producer
 
 import ars.kafka.AbstractBaseTest
 import ars.kafka.config.CommonConfig
+import ars.kafka.producer.pack.Packer
 
 /** Tests for [[Packer]].
   *
