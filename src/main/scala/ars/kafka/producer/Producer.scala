@@ -26,13 +26,13 @@ import scala.concurrent.Future
 
 /** The single thread blocking Kafka producer.
   *
-  * @tparam K the key type
-  * @tparam V the value type
+  * @tparam Key the key type
+  * @tparam Value the value type
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait Producer[K, V] extends AutoCloseable {
+trait Producer[Key, Value] extends AutoCloseable {
 
   /**
     * Gets the configuration.
@@ -48,7 +48,7 @@ trait Producer[K, V] extends AutoCloseable {
     *
     * @return the new producer (non-null)
     */
-  def createProducer(config: ProducerConfig): KafkaProducer[K, V]
+  def createProducer(config: ProducerConfig): KafkaProducer[Key, Value]
 
   /**
     * Creates new record.
@@ -59,7 +59,7 @@ trait Producer[K, V] extends AutoCloseable {
     *
     * @return the new producer record (non-null)
     */
-  def createRecord(topic: String, key: Option[K], value: V): ProducerRecord[K, V]
+  def createRecord(topic: String, key: Option[Key], value: Value): ProducerRecord[Key, Value]
 
   /**
     * Sends the message to the topic.
@@ -70,7 +70,7 @@ trait Producer[K, V] extends AutoCloseable {
     *
     * @return the future of result metadata (non-null)
     */
-  def send(topic: String, key: Option[K], value: V): Future[RecordMetadata]
+  def send(topic: String, key: Option[Key], value: Value): Future[RecordMetadata]
 
   /**
     * Sends the message without key to the topic.
@@ -80,7 +80,7 @@ trait Producer[K, V] extends AutoCloseable {
     *
     * @return the future of result metadata (non-null)
     */
-  def send(topic: String, value: V): Future[RecordMetadata]
+  def send(topic: String, value: Value): Future[RecordMetadata]
 
   /**
     * Sends the record to the topic.
@@ -89,7 +89,7 @@ trait Producer[K, V] extends AutoCloseable {
     *
     * @return the future of result metadata (non-null)
     */
-  def send(record: ProducerRecord[K, V]): Future[RecordMetadata]
+  def send(record: ProducerRecord[Key, Value]): Future[RecordMetadata]
 
 
   /**

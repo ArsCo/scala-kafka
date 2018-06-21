@@ -20,15 +20,16 @@ import java.io.Serializable
 import java.time.Instant
 import java.time.temporal.ChronoUnit.MINUTES
 
+import ars.common.enumeration.{EnumObject, SerializableIntEnumValue}
 import ars.kafka.config.{ConsumerConfig, Deserializers, ProducerConfig, Serializers}
 import ars.kafka.consumer.retry.RetryPolicy
-import ars.kafka.consumer.unpack.{DeserializationUnpackingConsumer, HeaderedDeserializationUnpacker}
-import ars.kafka.consumer.{ProcessCompletionStatus, ProcessCompletionStatuses}
-import ars.kafka.producer.pack.serialization.{HeaderBodySerializationPacker, SerializableIntEnum, SerializationPackingProducer}
-import ars.kafka.tmp.HeaderedIntegrationTest.TestHeaders._
+import ars.kafka.consumer.unpacker.HeaderBodyDeserializationUnpacker
+import ars.kafka.consumer.{AbstractDeserializationUnpackingConsumer, ProcessCompletionStatus, ProcessCompletionStatuses}
+import ars.kafka.producer.SerializationPackingProducer
+import ars.kafka.producer.packer.HeaderBodySerializationPacker
 
 import scala.concurrent.forkjoin.ThreadLocalRandom
-import scala.util._
+import scala.util.{Failure, Success, Try}
 
 /**
   *
@@ -42,20 +43,18 @@ object HeaderedIntegrationTest {
   case class TestBody(str: String, int: Int, date: Instant) extends Serializable
 
 
-  sealed abstract class TestHeader(value: Int) extends SerializableIntEnum[TestHeader](value) {
-    def valueOf(code: Int): Try[TestHeader] = {
-      if (code == 1) Success(GoodHeader)
-      else if (code == -1) Success(BadHeader)
-      else Failure(new IllegalStateException())
-
-    }
+  sealed abstract class TestHeader(value: Int) extends SerializableIntEnumValue[TestHeader, TestHeaders.type](value) {
+//    def valueOf(code: Int): Try[TestHeader] = TestHeaders.valueOf(code)
   }
-  object TestHeaders {
+
+  object TestHeaders extends EnumObject[TestHeader, Int] {
     final case object GoodHeader extends TestHeader(1)
     final case object BadHeader extends TestHeader(-1)
+
+    override def values: Seq[TestHeader] = Seq(GoodHeader, BadHeader)
   }
 
-  private[this] def randomHeader(): TestHeader = if (ThreadLocalRandom.current().nextBoolean()) GoodHeader else BadHeader
+  private[this] def randomHeader(): TestHeader = if (ThreadLocalRandom.current().nextBoolean()) TestHeaders.GoodHeader else TestHeaders.BadHeader
 
   private[this] val TestTopic = "dm_test_topic_header"
 
@@ -68,9 +67,9 @@ object HeaderedIntegrationTest {
 
   private[this] val consumerConfig = ConsumerConfig.defaultLocal(deserializers = Deserializers.ByteArrayDeserializers)
 
-  private[this] val consumer = new DeserializationUnpackingConsumer[AnyRef, (TestHeader, TestBody)](
+  private[this] val consumer = new AbstractDeserializationUnpackingConsumer[AnyRef, (TestHeader, TestBody)](
     consumerConfig, Seq("dm_test_topic_header"),
-    valueUnpacker = new HeaderedDeserializationUnpacker[TestHeader, TestBody]((t: TestHeader) => true)) {
+    valueUnpacker = new HeaderBodyDeserializationUnpacker[TestHeader, TestBody]((t: TestHeader) => true)) {
 
     override def retryPolicy: RetryPolicy = ??? // TODO
 

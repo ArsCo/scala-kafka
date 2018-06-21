@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.pack.serialization
+package ars.kafka.producer.packer
 
 import ars.kafka.util.SerializationUtils.serializeValue
 

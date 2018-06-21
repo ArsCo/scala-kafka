@@ -21,6 +21,7 @@ import ars.kafka.config.Server.DefaultLocalServer
 
 
 /** Kafka consumer configuration.
+  * Default implementation of this trait is [[DefaultConsumerConfig]].
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
@@ -117,7 +118,7 @@ object ConsumerConfig {
   final val DefaultGroupId = "default-group"
 
   /**
-    * Creates local Kafka consumer configuration.
+    * Creates default local Kafka consumer configuration.
     *
     * @param deserializers the deserializers (non-null).
     *                      By default it uses binary deserializers for both key and value.
@@ -128,7 +129,7 @@ object ConsumerConfig {
     *
     * @throws IllegalArgumentException if any argument is invalid
     *
-    * @return the new instance of configuration.
+    * @return the new instance of configuration (non-null)
     */
   def defaultLocal(
       deserializers: Deserializers = ByteBufferDeserializers,
@@ -136,22 +137,5 @@ object ConsumerConfig {
       groupId: String = DefaultGroupId
   ): ConsumerConfig = {
     DefaultConsumerConfig(deserializers, bootstrapServers, groupId)
-  }
-
-  def apply(
-    deserializers: Deserializers,
-    bootstrapServers: Seq[Server],
-    groupId: String,
-
-    minFetchBytes: Option[Int] = None,
-    heartbeatInterval: Option[Int] = None,
-    maxPartitionFetchBytes: Option[Int] = None,
-    sessionTimeout: Option[Int] = None,
-
-    autoCommit: Option[Boolean] = None,
-    raw: Map[String, Any] = Map()
-  ): ConsumerConfig = {
-    DefaultConsumerConfig(deserializers, bootstrapServers, groupId, minFetchBytes,
-      heartbeatInterval, maxPartitionFetchBytes, sessionTimeout, autoCommit, raw)
   }
 }

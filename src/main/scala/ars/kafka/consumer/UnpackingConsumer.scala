@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package ars.kafka.consumer.unpack
+package ars.kafka.consumer
 
-import ars.kafka.consumer.{ProcessCompletionStatus, ProcessCompletionStatuses, SingleThreadConsumer}
+import ars.kafka.consumer.unpacker.Unpacker
 import com.typesafe.scalalogging.Logger
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
@@ -28,10 +28,11 @@ import scala.util.{Failure, Success}
   * @tparam SerKey the serialized key type
   * @tparam Value the value type
   * @tparam SerValue the serialized value type
+  *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait UnpackingConsumer[SerKey, Key, SerValue, Value] extends SingleThreadConsumer[SerKey, SerValue] {
+trait UnpackingConsumer[SerKey, Key, SerValue, Value] extends SingleThreadConsumer[SerKey, SerValue] { // TODO Change to Consumer[K,V] for other consumers
 
   /** Key unpacker.
     *
@@ -91,7 +92,9 @@ trait UnpackingConsumer[SerKey, Key, SerValue, Value] extends SingleThreadConsum
 
   private def processValue(serValue: SerValue): ProcessCompletionStatus = {
     unpackValue(serValue) match {
-      case Success(v) => processUnpacked(None, v)
+      case Success(v) =>
+        logger.debug(s"Value was unpacked: '$serValue' => '$v'.")
+        processUnpacked(None, v)
       case Failure(e) =>
         logger.error(s"Value unpacking was failed for '$serValue'", e)
         ProcessCompletionStatuses.Skip // TODO

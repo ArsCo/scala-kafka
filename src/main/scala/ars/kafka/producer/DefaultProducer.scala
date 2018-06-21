@@ -23,7 +23,7 @@ import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecor
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 
-/** Abstract single thread producer.
+/** Default implementation of single thread producer.
   *
   * @param config the configuration (must be non-null)
   * @param ec the execution context (must be non-null). By default `ExecutionContext.global`
@@ -31,22 +31,22 @@ import scala.util.{Failure, Success, Try}
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class DefaultProducer[K, V](
+class DefaultProducer[Key, Value](
     override val config: ProducerConfig
-)(implicit ec: ExecutionContext = ExecutionContext.global) extends Producer[K, V] {
+)(implicit ec: ExecutionContext = ExecutionContext.global) extends Producer[Key, Value] {
 
   requireNotNull(config, "config")
 
   private val producer = createProducer(config)
 
   /** @inheritdoc */
-  override def createProducer(config: ProducerConfig): KafkaProducer[K, V] = {
+  override def createProducer(config: ProducerConfig): KafkaProducer[Key, Value] = {
     requireNotNull(config, "config")
-    new KafkaProducer[K, V](config.allAsProps)
+    new KafkaProducer[Key, Value](config.allAsJava)
   }
 
   /** @inheritdoc */
-  override def createRecord(topic: String, key: Option[K], value: V): ProducerRecord[K, V] = {
+  override def createRecord(topic: String, key: Option[Key], value: Value): ProducerRecord[Key, Value] = {
     requireNotNull(topic, "topic")
     requireNotNull(key, "key")
     requireNotNull(value, "value")
@@ -58,16 +58,16 @@ class DefaultProducer[K, V](
   override def close(): Unit = producer.close()
 
   /** @inheritdoc */
-  override def send(topic: String, value: V): Future[RecordMetadata] = send(topic, None, value)
+  override def send(topic: String, value: Value): Future[RecordMetadata] = send(topic, None, value)
 
   /** @inheritdoc */
-  override def send(topic: String, key: Option[K], value: V): Future[RecordMetadata] = {
+  override def send(topic: String, key: Option[Key], value: Value): Future[RecordMetadata] = {
     val record = createRecord(topic, key, value)
     send(record)
   }
 
   /** @inheritdoc */
-  override def send(record: ProducerRecord[K, V]): Future[RecordMetadata] = {
+  override def send(record: ProducerRecord[Key, Value]): Future[RecordMetadata] = {
     requireNotNull(record, "record")
 
     val promise = Promise[RecordMetadata]()

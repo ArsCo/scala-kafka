@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.pack
+package ars.kafka.producer
 
 import ars.kafka.config.ProducerConfig
-import ars.kafka.producer.DefaultProducer
+import ars.kafka.producer.packer.Packer
 import ars.precondition.require.Require.Default._
 
 /** Producer that packs key and value before sending.
@@ -34,7 +34,7 @@ import ars.precondition.require.Require.Default._
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class AbstractPackingProducer[Key, SerKey, Value, SerValue](
+class DefaultPackingProducer[Key, SerKey, Value, SerValue](
     config: ProducerConfig,
     override val keyPacker: Packer[Key, SerKey],
     override val valuePacker: Packer[Value, SerValue]

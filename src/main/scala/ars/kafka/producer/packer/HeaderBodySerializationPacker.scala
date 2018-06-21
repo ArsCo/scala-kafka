@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.pack.serialization
+package ars.kafka.producer.packer
 
-import ars.kafka.producer.pack.HeaderBodyPacker
 import ars.kafka.util.ByteUtils
 import ars.kafka.util.SerializationUtils.serializeValue
 import ars.precondition.require.Require.Default._
@@ -30,7 +29,8 @@ import scala.util.{Failure, Success, Try}
   * @since 0.0.1
   */
 class HeaderBodySerializationPacker[Header <: AnyRef, Body <: AnyRef]
-  extends HeaderBodyPacker[Header, Body, Array[Byte]] {
+  extends HeaderBodyPacker[Header, Body, Array[Byte]]
+  with SerializationPacker[(Header, Body)] {
 
   /** @inheritdoc */
   override def pack(from: (Header, Body)): Try[Array[Byte]] = {

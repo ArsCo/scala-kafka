@@ -37,7 +37,7 @@ import scala.concurrent.duration._
   */
 abstract class AbstractCommonSingleThreadConsumer[K, V](
     override val config: ConsumerConfig
-) extends SingleThreadConsumer[K, V] {
+) extends SingleThreadConsumer[K, V] { // TODO Change to Consumer[K,V]
 
   requireNotNull(config, "config")
 

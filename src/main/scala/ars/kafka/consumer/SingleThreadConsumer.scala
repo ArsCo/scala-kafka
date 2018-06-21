@@ -25,13 +25,13 @@ import scala.concurrent.duration.Duration
 /** The single thread blocking Kafka consumer.
   * It abstracts synchronous kafka polling with custom commit implementation.
   *
-  * @tparam K the key type
-  * @tparam V the value type
+  * @tparam Key the key type
+  * @tparam Value the value type
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait SingleThreadConsumer[K, V] {
+trait SingleThreadConsumer[Key, Value] extends Consumer[Key, Value] { // TODO: Refactor methods to Consumer[K, V]
 
   // TODO Verify algorithm!!!
   /**
@@ -54,7 +54,7 @@ trait SingleThreadConsumer[K, V] {
     *     }
     *   }
     *
-    *   def process(records: ConsumerRecords[K, V]): Boolean = {
+    *   def process(records: ConsumerRecords[Key, Value]): Boolean = {
     *     for (record <- records) {
     *       if(!process(record)) return false
     *     }
@@ -80,21 +80,21 @@ trait SingleThreadConsumer[K, V] {
     *
     * @return the new consumer
     */
-  def createConsumer(config: ConsumerConfig): KafkaConsumer[K, V]
+  def createConsumer(config: ConsumerConfig): KafkaConsumer[Key, Value]
 
   /**
     * Subscribes consumer to topic(s).
     *
     * @param consumer the consumer (must be non-null)
     */
-  def subscribe(consumer: KafkaConsumer[K, V]): Unit
+  def subscribe(consumer: KafkaConsumer[Key, Value]): Unit
 
   /**
     * Gets the next portion of messages from kafka and process
     *
     * @param consumer the consumer (must be non-null)
     */
-  def process(consumer: KafkaConsumer[K, V]): Unit
+  def process(consumer: KafkaConsumer[Key, Value]): Unit
 
   /** Processes consumed records. If This method returns `false` then [[process()]]
     * will not be called, otherwise [[process()]] method will be called for each
@@ -104,7 +104,7 @@ trait SingleThreadConsumer[K, V] {
     *
     * @return `true` if records must be processed in [[process()]], and `false` otherwise
     */
-  def process(records: ConsumerRecords[K, V]): Boolean // TODO: ProcessCompletionStatus
+  def process(records: ConsumerRecords[Key, Value]): Boolean // TODO: ProcessCompletionStatus
 
   /**
     * Processes record. If This method returns `false` then all records from previous call of
@@ -115,7 +115,7 @@ trait SingleThreadConsumer[K, V] {
     *
     * @return `true` if record was processed successfully, and `false` otherwise.
     */
-  def process(record: ConsumerRecord[K, V]): ProcessCompletionStatus
+  def process(record: ConsumerRecord[Key, Value]): ProcessCompletionStatus
 
   /** Handles unexpected exceptions.
     *
@@ -128,7 +128,7 @@ trait SingleThreadConsumer[K, V] {
     *
     * @param consumer the consumer (must be non-null)
     */
-  def close(consumer: KafkaConsumer[K, V]): Unit
+  def close(consumer: KafkaConsumer[Key, Value]): Unit
 
   /**
     * @return configuration (non-null)
@@ -149,7 +149,7 @@ trait SingleThreadConsumer[K, V] {
     *
     * @return the consumer (non-null)
     */
-  def nativeConsumer: KafkaConsumer[K, V]
+  def nativeConsumer: KafkaConsumer[Key, Value]
 
   /**
     * Gets retry policy.
@@ -162,5 +162,5 @@ trait SingleThreadConsumer[K, V] {
 object SingleThreadConsumer {
 
   /** Default consumer polling timeout. */
-  val DefaultPollingTimeout = 500000
+  val DefaultPollingTimeout = 5000
 }

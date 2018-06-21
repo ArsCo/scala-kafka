@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package ars.kafka.consumer.unpack
+package ars.kafka.producer
 
-/**
-  *
+import ars.kafka.config.ProducerConfig
+import ars.kafka.producer.packer.{SerializationPacker, SimpleSerializationPacker}
+
+/** Serialization packing producer. Serializes key an value to byte arrays
+  * with `keyPacker` and `valuePacker` respectively.
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait DeserializationUnpacker[To] extends Unpacker[Array[Byte], To]
+class SerializationPackingProducer[Key <: AnyRef, Value <: AnyRef](
+    config: ProducerConfig,
+    override val keyPacker: SerializationPacker[Key] = new SimpleSerializationPacker[Key],
+    override val valuePacker: SerializationPacker[Value] = new SimpleSerializationPacker[Value]
+) extends DefaultPackingProducer[Key, Array[Byte], Value, Array[Byte]](config, keyPacker, valuePacker)

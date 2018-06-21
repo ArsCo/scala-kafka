@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.pack.serialization
+package ars.kafka.consumer
 
-import ars.kafka.producer.pack.Packer
-
-/**
-  *
+/** The Kafka consumer base trait.
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait SerializationPacker[From] extends Packer[From, Array[Byte]]
+trait Consumer[Key, Value]

@@ -14,39 +14,24 @@
  * limitations under the License.
  */
 
-package ars.kafka.consumer.unpack
+package ars.kafka.consumer.unpacker
+import ars.kafka.util.SerializationUtils
 
-import scala.util.{Success, Try}
+import scala.util.Try
 
-/** Unpacker.
+/**
+  *
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-trait Unpacker[From, To] {
+class SimpleDeserializationUnpacker[To] extends DeserializationUnpacker[To] {
 
   /**
-    * Unpacks the `from` value of type [[From]] to serial type [[To]]
+    * Unpacks the standard Java serialized value (byte array) to type [[To]].
     *
-    * @param from the from value (must be non-null).
-    *
+    * @param bytes the from value (must be non-null).
     * @return the result (non-null)
     */
-  def unpack(from: From): Try[To]
-}
-
-object Unpacker {
-
-  /**
-    * Creates new identity unpacker. This unpacker do noting.
-    *
-    * @tparam T the type param
-    *
-    * @return the new identity unpacker (non-null)
-    */
-  def identityUnpacker[T](): Unpacker[T, T] = new Unpacker[T, T] {
-
-    /** @inheritdoc */
-    override def unpack(from: T): Try[T] = Success(from)
-  }
+  override def unpack(bytes: Array[Byte]): Try[To] = SerializationUtils.deserializeObject(bytes) // TODO Must be not only objects
 }

@@ -43,7 +43,7 @@ trait CommonConfig {
   def all: Map[String, Any] = raw
 
   /**
-    * Converts sequence of servers to comma separated list of `<IP>:<Port>` pairs.
+    * Converts sequence of servers to comma separated list of `<Host>:<Port>` pairs.
     *
     * @param servers the servers (must be non-null)
     *
@@ -54,13 +54,13 @@ trait CommonConfig {
   protected final def toMap(servers: Server*): Map[String, Any] = {
     requireNotBlank(servers, "servers")
 
-    val serversString = servers.map { case Server(hostname, port) => s"$hostname:$port" }.mkString(",")
+    val serversString = servers.map(_.toConnectionString).mkString(",")
     Map("bootstrap.servers" -> serversString)
   }
 
   /**
     * Converts sequence of pairs `(<key>, <optional>)` to configuration params map.
-    * It filters [[None]] values.
+    * It filters pairs with [[None]] values.
     *
     * @param params the sequence of pairs `(<key>, <optional>)` (must be non-null)
     *
@@ -85,6 +85,6 @@ trait CommonConfig {
   /**
     * @return the same as [[all]] but returns Java [[Properties]].
     */
-  def allAsProps: Properties = KafkaUtils.toProps(all)
+  def allAsJava: Properties = KafkaUtils.toProps(all)
 
 }

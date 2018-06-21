@@ -55,9 +55,7 @@ trait BeforeAfterRecordProcessing[K, V] extends SingleThreadConsumer[K, V] {
     val processStatus = super.process(record)
     if (beforeStatus != ProcessCompletionStatuses.Success) return processStatus
 
-
-    val afterStatus = afterProcess(record)
-    return afterStatus
+    afterProcess(record)
 
 
 //    if (!beforeProcess(record)) return false

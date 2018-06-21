@@ -64,6 +64,8 @@ lazy val coverageSettings = {
   )
 }
 
+
+
 val Log4jVersion = "2.7"
 
 lazy val `scala-kafka` = (project in file("."))
@@ -78,8 +80,11 @@ lazy val `scala-kafka` = (project in file("."))
     projectUrls,
     coverageSettings,
 
+    resolvers += "ossrh" at "https://oss.sonatype.org/content/repositories/snapshots/",
+
     libraryDependencies ++= /*Dependencies.logging*/ Dependencies.testing ++
                             Dependencies.kafka ++ Dependencies.zookeeper ++ Dependencies.preconditions ++
+      Seq("ru.ars-co" %% "scala-common" % "0.0.1-SNAPSHOT") ++
     Seq(
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "org.slf4j" % "jcl-over-slf4j" % "1.7.21",

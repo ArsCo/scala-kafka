@@ -16,7 +16,7 @@
 
 package ars.kafka.config
 
-import scala.util.{Failure, Success, Try}
+import ars.common.enumeration.{EnumObject, EnumValue}
 
 /** The compression type.
   *
@@ -25,19 +25,13 @@ import scala.util.{Failure, Success, Try}
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class CompressionType(val code: String)
+abstract sealed class CompressionType(val code: String) extends EnumValue[String]
 
-object CompressionTypes {
+object CompressionTypes extends EnumObject[CompressionType, String] {
   final case object None extends CompressionType("none")
   final case object GZip extends CompressionType("gzip")
   final case object Snappy extends CompressionType("snappy")
-  final case object Lz4 extends CompressionType("lz4")
+  final case object LZ4 extends CompressionType("lz4")
 
-  val allValues: Seq[CompressionType] = Seq(None, GZip, Snappy, Lz4)
-
-  def valueOf(value: String): Try[CompressionType] = {
-    val result = allValues.filter(_.code == value)
-    if (result.isEmpty) Failure(new IllegalArgumentException(s"Unknown CompressionType with code '$value'"))
-    else Success(result.head)
-  }
+  val values: Seq[CompressionType] = Seq(None, GZip, Snappy, LZ4)
 }

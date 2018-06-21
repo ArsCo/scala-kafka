@@ -32,7 +32,7 @@ class SerializationUtilsTest extends AbstractBaseTest {
   "serialize()" must "validate args" in {
 
     intercept[IllegalArgumentException] {
-      SerializationUtils.serialize(null, (s: String, o: ObjectOutputStream) => {})
+      SerializationUtils.serialize(null, (o: ObjectOutputStream, s: String) => {})
     }
 
     intercept[IllegalArgumentException] {

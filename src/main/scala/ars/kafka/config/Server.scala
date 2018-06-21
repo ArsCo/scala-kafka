@@ -30,7 +30,15 @@ import ars.precondition.require.Require.Default._
 case class Server(host: String, port: Int) {
   requireNotBlank(host, "host")
   requireNumberInRange(port, 0.inclusive, 0xffff.inclusive, "port")
+
+  /**
+    * Converts server to `<Host>:<Port>` string.
+    *
+    * @return the `<Host>:<Port>` string (non-null)
+    */
+  def toConnectionString: String = s"$host:$port"
 }
+
 object Server {
   final val DefaultLocalServer = Server("localhost", 9092)
 }

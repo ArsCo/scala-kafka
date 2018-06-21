@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.pack
+package ars.kafka.producer
 
-import ars.kafka.producer.Producer
+import ars.kafka.producer.packer.Packer
 import ars.precondition.require.Require.Default._
 import com.typesafe.scalalogging.Logger
 import org.apache.kafka.clients.producer.RecordMetadata

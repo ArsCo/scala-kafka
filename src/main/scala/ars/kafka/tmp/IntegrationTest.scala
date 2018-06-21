@@ -24,10 +24,10 @@ import java.util.concurrent.{ExecutorService, Executors}
 
 import ars.kafka.config.{ConsumerConfig, ProducerConfig}
 import ars.kafka.consumer.retry.RetryPolicy
-import ars.kafka.consumer.{ProcessCompletionStatus, ProcessCompletionStatuses}
-import ars.kafka.consumer.unpack.{AbstractUnpackingConsumer, Unpacker}
-import ars.kafka.producer.pack.serialization.SimpleSerializationPacker
-import ars.kafka.producer.pack.{AbstractPackingProducer, Packer}
+import ars.kafka.consumer.{AbstractUnpackingConsumer, ProcessCompletionStatus, ProcessCompletionStatuses}
+import ars.kafka.consumer.unpacker.Unpacker
+import ars.kafka.producer.DefaultPackingProducer
+import ars.kafka.producer.packer.{Packer, SimpleSerializationPacker}
 
 import scala.util.{Failure, Success, Try}
 
@@ -46,7 +46,7 @@ object IntegrationTest {
 
   private[this] val producerConfig = ProducerConfig.defaultLocal()
 
-  private[this] val producer = new AbstractPackingProducer[String, Array[Byte], TestMessage, ByteBuffer](
+  private[this] val producer = new DefaultPackingProducer[String, Array[Byte], TestMessage, ByteBuffer](
     producerConfig,
     new SimpleSerializationPacker[String],
 

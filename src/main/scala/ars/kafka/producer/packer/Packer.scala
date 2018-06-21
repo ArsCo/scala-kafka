@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.pack
+package ars.kafka.producer.packer
 
 import scala.util.{Success, Try}
 
 /** Packer.
+  *
+  * @tparam From the from value type
+  * @tparam To the to value type
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
@@ -33,20 +36,4 @@ trait Packer[From, To] {
     * @return the result (non-null)
     */
   def pack(from: From): Try[To]
-}
-
-object Packer {
-
-  /**
-    * Creates new identity packer. This unpacker do noting.
-    *
-    * @tparam T the type param
-    *
-    * @return the new identity unpacker (non-null)
-    */
-  def identityPacker[T](): Packer[T, T] = new Packer[T, T] {
-
-    /** @inheritdoc */
-    override def pack(from: T): Try[T] = Success(from)
-  }
 }

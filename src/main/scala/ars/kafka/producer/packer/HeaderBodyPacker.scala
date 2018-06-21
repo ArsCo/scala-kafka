@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.pack
+package ars.kafka.producer.packer
 
 import ars.precondition.require.Require.Default._
 
@@ -22,6 +22,10 @@ import scala.util.Try
 
 /** Packer to pack header-body message. It packs header, packs body and then
   * concatenates them to single binary sequence.
+  *
+  * @tparam Header the header type
+  * @tparam Body the body type
+  * @tparam To the to value type
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1

@@ -16,6 +16,12 @@
 
 package ars.kafka.consumer.retry
 
+import java.io.{ObjectInputStream, ObjectOutputStream}
+//
+//import ars.common.enumeration.SerializableEnumValue
+//import com.sun.tools.javac.code.TypeTag
+
+
 /**
   *
   *
@@ -27,6 +33,14 @@ trait RetryPolicy {
 
 
 }
+
+
+//abstract class SerializableStringEnumValue[EnumType: TypeTag](val code: String)
+//  extends SerializableEnumValue[EnumType, String] with Serializable {
+//
+//  def serialize(out: ObjectOutputStream): Unit = out.writeUTF(code)
+//  def deserialize(in: ObjectInputStream): String = in.readUTF()
+//}
 
 /**
   * Default retry policy.

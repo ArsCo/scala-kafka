@@ -18,8 +18,10 @@ package ars.kafka.config
 
 import ars.precondition.require.Require.Default._
 
-/**
+/** SSL configuration part.
   *
+  * @param location the location string (non-blank)
+  * @param password the password string (non-blank)
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1

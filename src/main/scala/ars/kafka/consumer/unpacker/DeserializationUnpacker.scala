@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer.pack.serialization
-
-import ars.kafka.config.ProducerConfig
-import ars.kafka.producer.pack.{AbstractPackingProducer, Packer}
+package ars.kafka.consumer.unpacker
 
 /**
   *
@@ -25,8 +22,4 @@ import ars.kafka.producer.pack.{AbstractPackingProducer, Packer}
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class SerializationPackingProducer[Key <: AnyRef, Value <: AnyRef](
-    config: ProducerConfig,
-    override val keyPacker: Packer[Key, Array[Byte]] = new SimpleSerializationPacker[Key],
-    override val valuePacker: Packer[Value, Array[Byte]] = new SimpleSerializationPacker[Value]
-) extends AbstractPackingProducer[Key, Array[Byte], Value, Array[Byte]](config, keyPacker, valuePacker)
+trait DeserializationUnpacker[To] extends Unpacker[Array[Byte], To]

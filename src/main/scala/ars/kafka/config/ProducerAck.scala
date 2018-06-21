@@ -16,17 +16,22 @@
 
 package ars.kafka.config
 
-/**
-  * The ack.
+import ars.common.enumeration.{EnumObject, EnumValue}
+
+/** The producer ack.
   *
-  * @param value the value for configuration
+  * @param code the code for configuration (non-null)
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class ProducerAck(val value: String)
-object ProducerAcks {
+sealed abstract class ProducerAck(override val code: String) extends EnumValue[String]
+
+object ProducerAcks extends EnumObject[ProducerAck, String] {
   final case object NotWait extends ProducerAck("0")
   final case object LeaderOnly extends ProducerAck("1")
   final case object All extends ProducerAck("all")
+
+  /** @inheritdoc */
+  val values = Seq(NotWait, LeaderOnly, All)
 }

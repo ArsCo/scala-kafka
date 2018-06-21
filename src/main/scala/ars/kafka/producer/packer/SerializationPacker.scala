@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package ars.kafka.producer
+package ars.kafka.producer.packer
 
-import ars.kafka.AbstractBaseTest
-import ars.kafka.config.CommonConfig
-import ars.kafka.producer.packer.Packer
-
-/** Tests for [[Packer]].
+/** Serialization packer.
+  *
+  * @tparam From the from value type
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class PackerTest extends AbstractBaseTest {
-
-}
+trait SerializationPacker[From] extends Packer[From, Array[Byte]]

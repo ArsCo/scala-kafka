@@ -31,6 +31,12 @@ import scala.util.{Failure, Try}
   */
 object SerializationUtils {
 
+  /** Serializer type. */
+  type Serializer[T] = (ObjectOutputStream, T) => Unit
+
+  /** Deserializer type. */
+  type Deserializer[T] = ObjectInputStream => T
+
   /**
     * Serializes `value` with custom `serializer`.
     *
@@ -41,7 +47,7 @@ object SerializationUtils {
     *
     * @return the serializable value (non-null)
     */
-  def serialize[T](value: T, serializer: => (T, ObjectOutputStream) => Unit): Try[Array[Byte]] = {
+  def serialize[T](value: T, serializer: => Serializer[T]): Try[Array[Byte]] = {
     requireNotNull(value, "value")
     requireNotNull(serializer, "serializer")
 
@@ -50,7 +56,7 @@ object SerializationUtils {
       try {
         val baos = new ByteArrayOutputStream(1)
         oos = new ObjectOutputStream(baos)
-        serializer(value, oos)
+        serializer(oos, value)
         oos.flush()
         baos.toByteArray
 
@@ -93,22 +99,27 @@ object SerializationUtils {
 
 
 
-  type Serializer[T] = (T, ObjectOutputStream) => Unit
-  type Deserializer[T] = ObjectInputStream => T
+  // TODO: Add all types
+  val ByteSerializer: Serializer[Byte] = _.writeByte(_)
+  val ShortSerializer: Serializer[Short] = _.writeShort(_)
+  val IntSerializer: Serializer[Int] = _.writeInt(_)
+  val LongSerializer: Serializer[Long] = _.writeLong(_)
+  val StringSerializer: Serializer[String] = _.writeUTF(_)
+  def ObjectSerializer[T]: Serializer[T] = _.writeObject(_)
+
+  val ByteDeserializer: Deserializer[Byte] = _.readByte()
+  val ShortDeserializer: Deserializer[Short] = _.readShort()
+  val IntDeserializer: Deserializer[Int] = _.readInt()
+  val LongDeserializer: Deserializer[Long] = _.readLong()
+  val StringDeserializer: Deserializer[String] = _.readUTF()
+  def ObjectDeserializer[T]: Deserializer[T] = _.readObject().asInstanceOf[T]
 
 
-  val StringSerializer: Serializer[String] = (value: String, oos: ObjectOutputStream) => oos.writeUTF(value)
-  val StringDeserializer: Deserializer[String] = (ois: ObjectInputStream) => ois.readUTF()
-
-  def ObjectSerializer[T]: Serializer[T] = (obj: T, oos: ObjectOutputStream) => oos.writeObject(obj)
-  def ObjectDeserializer[T]: Deserializer[T] = (ois: ObjectInputStream) => ois.readObject().asInstanceOf[T]
-
-
-  def ObjectPairSerializer[T1, T2]: Serializer[(T1, T2)] =
-    (obj: (T1, T2), oos: ObjectOutputStream) => {
-
-      oos.writeObject(obj)
-    }
+//  def ObjectPairSerializer[T1, T2]: Serializer[(T1, T2)] =
+//    (obj: (T1, T2), oos: ObjectOutputStream) => {
+//
+//      oos.writeObject(obj)
+//    }
 
 //  def ValueSerializer[T]: Serializer[T] = (value: T, oos: ObjectOutputStream) => {
 //    value match {
@@ -128,7 +139,7 @@ object SerializationUtils {
     *
     * @return the deserializable value (non-null)
     */
-  def deserialize[T](bytes: Array[Byte], deserializer: => ObjectInputStream => T): Try[T] = {
+  def deserialize[T](bytes: Array[Byte], deserializer: => Deserializer[T]): Try[T] = {
     requireNotNull(bytes, "bytes")
     requireNotNull(deserializer, "deserializer")
 
@@ -139,7 +150,9 @@ object SerializationUtils {
         deserializer(ois)
 
       } finally {
-        ois.close() // TODO Bad impl
+        if (ois != null) {
+          ois.close()
+        }
       }
     }
   }
@@ -194,23 +207,34 @@ object SerializationUtils {
     *
     * @return the byte array (non-null)
     */
-  def serializeValue[T <: AnyRef](value: T): Try[Array[Byte]] = {
+  def serializeValue[T](value: T): Try[Array[Byte]] = {
     requireNotNull(value, "value")
 
     value match {
-      case s: String => SerializationUtils.serializeString(s)
+        // TODO: Add all types
+      case b: Byte => serialize(b, ByteSerializer)
+      case s: Short => serialize(s, ShortSerializer)
+      case i: Int => serialize(i, IntSerializer)
+      case l: Long => serialize(l, LongSerializer)
+      case s: String => serialize(s, StringSerializer)
       case o: AnyRef => SerializationUtils.serializeObject(o)
       case v => Failure(new IllegalStateException(s"Unexpected value: '$v' of type '${v.getClass.getCanonicalName}'"))
     }
   }
 
-//  def deserializeValue[T <: AnyRef](bytes: Array[Byte])(implicit classTag: ClassTag[T]): Try[T] = {
-//    if(classTag.runtimeClass.getClass == classOf[String]) {
-//      deserializeString(bytes)
-//    } else {
-//      deserializeObject(bytes)
-//    }
-//  }
+  def deserializeValue[T <: String](bytes: Array[Byte])(implicit classTag: ClassTag[T]): Try[T] = {
+
+    val clazz = classTag.runtimeClass.getClass
+    val dv = if(clazz == classOf[String]) deserializeString(bytes)
+    else if (clazz == classOf[Byte]) deserialize(bytes, ByteDeserializer)
+    else if (clazz == classOf[Short]) deserialize(bytes, ShortDeserializer)
+    else if (clazz == classOf[Int]) deserialize(bytes, IntDeserializer)
+    else if (clazz == classOf[Long]) deserialize(bytes, LongDeserializer)
+    else if (clazz == classOf[String]) deserialize(bytes, StringDeserializer)
+    else SerializationUtils.deserializeObject(bytes)
+
+    dv.asInstanceOf[Try[T]]
+  }
 
   private[this] def logger = Logger[SerializationUtils.type]
 }

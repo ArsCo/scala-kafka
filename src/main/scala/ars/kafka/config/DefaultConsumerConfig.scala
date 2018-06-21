@@ -18,23 +18,37 @@ package ars.kafka.config
 
 import ars.precondition.require.Require.Default._
 
-/**
-  *
+/** Default implementation of [[ConsumerConfig]].
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
 case class DefaultConsumerConfig(
+    /** @inheritdoc */
     override val deserializers: Deserializers,
+
+    /** @inheritdoc */
     override val bootstrapServers: Seq[Server],
+
+    /** @inheritdoc */
     override val groupId: String,
 
+    /** @inheritdoc */
     override val minFetchBytes: Option[Int] = None,
+
+    /** @inheritdoc */
     override val heartbeatInterval: Option[Int] = None,
+
+    /** @inheritdoc */
     override val maxPartitionFetchBytes: Option[Int] = None,
+
+    /** @inheritdoc */
     override val sessionTimeout: Option[Int] = None,
 
+    /** @inheritdoc */
     override val autoCommit: Option[Boolean] = None,
+
+    /** @inheritdoc */
     override val raw: Map[String, Any] = Map()
 ) extends ConsumerConfig {
 
@@ -42,6 +56,8 @@ case class DefaultConsumerConfig(
   requireNotBlank(bootstrapServers, "bootstrapServers")
   requireAllNotNull(bootstrapServers, "bootstrapServers")
   requireNotBlank(groupId, "groupId")
+
+  // TODO: Add correct validation code
 
 //  optional(minFetchBytes, "minFetchBytes") { case (v, n) =>
 //    requirePositive(v, n)
@@ -71,42 +87,16 @@ case class DefaultConsumerConfig(
 //    require(inter.nonEmpty, s"Parameter `raw` must not contains $interString")
 //  }
 
-
-
-
-  private val Custom = Set(
-    "key.deserializer",
-    "value.deserializer",
-
-    "bootstrap.servers",
-    "group.id",
-    "fetch.min.bytes",
-    "heartbeat.interval.ms",
-    "max.partition.fetch.bytes",
-    "session.timeout.ms",
-    "enable.auto.commit"
-  )
+//  private val Custom = Set(
+//    "key.deserializer",
+//    "value.deserializer",
+//
+//    "bootstrap.servers",
+//    "group.id",
+//    "fetch.min.bytes",
+//    "heartbeat.interval.ms",
+//    "max.partition.fetch.bytes",
+//    "session.timeout.ms",
+//    "enable.auto.commit"
+//  )
 }
-
-
-
-
-
-// TODO
-//case class SslKey(password: String) {
-//  password.map("ssl.key.password" -> _)
-//}
-//
-//case class SslKeystore(location: String, password: String) {
-//  def toMap: Map[String, Any] = {
-//    location.map("ssl.keystore.location" -> _) ++
-//    password.map("ssl.keystore.password" -> _)
-//
-//  }
-//}
-//
-//case class SslTruststore(location: String, password: String) {
-//  location.map("ssl.truststore.location" -> _) ++
-//  password.map("ssl.truststore.password" -> _)
-//}
-
