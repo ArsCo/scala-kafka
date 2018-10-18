@@ -24,8 +24,8 @@ import java.util.concurrent.{ExecutorService, Executors}
 
 import ars.kafka.config.{ConsumerConfig, ProducerConfig}
 import ars.kafka.consumer.retry.RetryPolicy
-import ars.kafka.consumer.{AbstractUnpackingConsumer, ProcessCompletionStatus, ProcessCompletionStatuses}
 import ars.kafka.consumer.unpacker.Unpacker
+import ars.kafka.consumer.{AbstractUnpackingConsumer, ProcessCompletionStatus, ProcessCompletionStatuses}
 import ars.kafka.producer.DefaultPackingProducer
 import ars.kafka.producer.packer.{Packer, SimpleSerializationPacker}
 

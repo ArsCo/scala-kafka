@@ -19,9 +19,10 @@ import ars.kafka.config.ProducerConfig
 import ars.precondition.require.Require.Default._
 import com.typesafe.scalalogging.Logger
 import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
+import org.apache.kafka.common.KafkaException
 
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.{Failure, Success, Try}
 
 /** Default implementation of single thread producer.
   *
@@ -39,13 +40,11 @@ class DefaultProducer[Key, Value](
 
   private val producer = createProducer(config)
 
-  /** @inheritdoc */
   override def createProducer(config: ProducerConfig): KafkaProducer[Key, Value] = {
     requireNotNull(config, "config")
     new KafkaProducer[Key, Value](config.allAsJava)
   }
 
-  /** @inheritdoc */
   override def createRecord(topic: String, key: Option[Key], value: Value): ProducerRecord[Key, Value] = {
     requireNotNull(topic, "topic")
     requireNotNull(key, "key")
@@ -54,8 +53,13 @@ class DefaultProducer[Key, Value](
     key.map(new ProducerRecord(topic, _, value)).getOrElse(new ProducerRecord(topic, value))
   }
 
-  /** @inheritdoc */
   override def close(): Unit = producer.close()
+
+  override def close(duration: Duration): Unit = {
+    requireNotNull(duration, "duration")
+
+    producer.close(duration.length, duration.unit)
+  }
 
   /** @inheritdoc */
   override def send(topic: String, value: Value): Future[RecordMetadata] = send(topic, None, value)
@@ -98,6 +102,32 @@ class DefaultProducer[Key, Value](
 
     promise.future
   }
+
+  //// TODO Tx start
+
+  private var isTxInit = false
+
+
+  def inTransaction(block: => Unit): Unit = {
+    if (!isTxInit) {
+      producer.initTransactions()
+    }
+
+    producer.beginTransaction()
+    try {
+      block()
+      producer.commitTransaction()
+    } catch {
+      case e: KafkaException =>
+        producer.abortTransaction()
+
+    }
+
+
+  }
+
+
+  /// TODO Tx end
 
   private def logger = Logger[DefaultProducer[_, _]]
 }

@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-package ars.kafka.config
+package ars.kafka.consumer
 
-import ars.common.enumeration.{EnumObject, EnumValue}
-
-/** The producer ack.
+/**
   *
-  * @param code the code for configuration (non-null)
   *
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-sealed abstract class ProducerAck(override val code: String) extends EnumValue[String]
-
-object ProducerAcks extends EnumObject[ProducerAck, String] {
-  final case object NotWait extends ProducerAck("0")
-  final case object LeaderOnly extends ProducerAck("1")
-  final case object All extends ProducerAck("all")
-
-  override val values = Seq(NotWait, LeaderOnly, All)
+package object unpacker {
+  type Bytes = Array[Byte]
 }

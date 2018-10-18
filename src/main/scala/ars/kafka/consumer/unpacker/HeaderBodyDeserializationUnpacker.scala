@@ -26,13 +26,13 @@ import scala.util.Try
   * @since 0.0.1
   */
 class HeaderBodyDeserializationUnpacker[Header <: AnyRef, Body <: AnyRef](bodyDeserializationPredicate: Header => Boolean)
-  extends DeserializationUnpacker[(Header, Body)] with HeaderBodyUnpacker[Array[Byte], Header, Body] {
+  extends DeserializationUnpacker[(Header, Body)] with HeaderBodyUnpacker[Bytes, Header, Body] {
 
   private[this] val HeaderSizeArrayLength = 4
   private[this] val HeaderOffset = HeaderSizeArrayLength
 
   /** @inheritdoc */
-  override def split(from: Array[Byte]): Try[(Array[Byte], Array[Byte])] = {
+  override def split(from: Bytes): Try[(Bytes, Bytes)] = {
     Try {
       val headerSizeBytes = from.slice(0, HeaderOffset)
       val headerArraySize = ByteUtils.bytes2int(headerSizeBytes)
@@ -46,12 +46,12 @@ class HeaderBodyDeserializationUnpacker[Header <: AnyRef, Body <: AnyRef](bodyDe
   }
 
   /** @inheritdoc */
-  override def unpackHeader(headerBytes: Array[Byte]): Try[Header] = {
+  override def unpackHeader(headerBytes: Bytes): Try[Header] = {
     SerializationUtils.deserializeObject[Header](headerBytes)
   }
 
   /** @inheritdoc */
-  override def unpackBody(bodyBytes: Array[Byte]): Try[Body] = {
+  override def unpackBody(bodyBytes: Bytes): Try[Body] = {
     SerializationUtils.deserializeObject(bodyBytes)
   }
 

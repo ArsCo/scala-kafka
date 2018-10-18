@@ -22,6 +22,8 @@ import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord, RecordM
 import ars.precondition.require.Require.Default._
 
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.util.control.NonFatal
 
 
 /** The single thread blocking Kafka producer.
@@ -94,41 +96,60 @@ trait Producer[Key, Value] extends AutoCloseable {
 
   /**
     * Closes the producer.
+    * This method is equivalent to `close(Duration(Int.MaxValue, MILLISECONDS))`.
     */
   override def close(): Unit
+
+  /**
+    * Closes the producer.
+    *
+    * @param duration the duration (must be non-null and positive)
+    */
+  def close(duration: Duration): Unit
+
+
+  def inTransaction(block: => Unit): Unit // TODO
+
 }
 
 object Producer {
 
-  /**
-    * Creates new producer by `creator` with configuration `config`.
-    *
-    * @param config the configuration (must be non-null)
-    * @param creator the creator (must be non-null)
-    * @param block the code block (must be non-null)
-    */
-  def withProducer[K, V](
-      config: ProducerConfig,
-      creator: ProducerConfig => Producer[K, V] = (c: ProducerConfig) => new DefaultProducer[K,V](c)
-  )(block: => Producer[K, V] => Unit): Unit = {
 
-    requireNotNull(config, "config")
-    requireNotNull(creator, "creator")
-    requireNotNull(block , "block")
+  // TODO Write General withProducer for each subtype of Producer[Key, Value]
 
-    var producer: Producer[K,V] = null
-    try {
-      producer = creator(config)
-      block(producer)
-    } catch {
-      case e: Exception =>
-        logger.error("Unexpected exception during execution. Producer will be closed carefully.", e)
-    } finally {
-      if (producer != null) {
-        producer.close()
-      }
-    }
-  }
+  type ProducerCreator[Key, Value, P <: Producer[Key, Value]] = ProducerConfig => P
+
+  def createDefaultProducer[K, V](config: ProducerConfig): Producer[K, V] = new DefaultProducer[K, V](config)
+
+//  /**
+//    * Creates new producer by `creator` with configuration `config`.
+//    *
+//    * @param config the configuration (must be non-null)
+//    * @param creator the creator (must be non-null)
+//    * @param block the code block (must be non-null)
+//    */
+//  def withProducer[K, V, P <: Producer[K, V]](
+//      config: ProducerConfig,
+//      creator: ProducerCreator[K, V] = createDefaultProducer[K, V]
+//  )(block: => Producer[K, V] => Unit): Unit = {
+//
+//    requireNotNull(config, "config")
+//    requireNotNull(creator, "creator")
+//    requireNotNull(block , "block")
+//
+//    var producer: P = null
+//    try {
+//      producer = creator(config)
+//      block(producer)
+//    } catch {
+//      case NonFatal(e) =>
+//        logger.error("Unexpected exception during execution. Producer will be closed carefully.", e)
+//    } finally {
+//      if (producer != null) {
+//        producer.close()
+//      }
+//    }
+//  }
 
   private[this] def logger = Logger[Producer.type]
 }

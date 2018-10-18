@@ -25,28 +25,37 @@ object Dependencies {
   val ScalaLoggingVersion = "3.7.2"
   val ScalaTestVersion = "3.0.0"
 
+  val LogbackVersion = "1.2.3"
+  val LogstashEncoderVersion = "5.0"
+
   val KafkaVersion = "1.1.0"
   val ZooKeeperVersion = "3.4.11"
 
-  val ScalaPreconditionsVersion = "0.1.0"
+  val ScalaPreconditionsVersion = "0.1.2"
+  val ScalaCommonVersion = "0.0.4"
 
   val ScalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % ScalaLoggingVersion
-  val Jcl2slf = "org.slf4j" % "jcl-over-slf4j" % "1.7.21"
 
-  val ScalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion % Test
-
-  val KafkaClient = "org.apache.kafka" % "kafka-clients" % KafkaVersion
-  val KafkaServer = "org.apache.kafka" %% "kafka" % KafkaVersion
+  val LoggingImpl = Seq(
+    "ch.qos.logback" % "logback-classic" % LogbackVersion,
+    "net.logstash.logback" % "logstash-logback-encoder" % LogstashEncoderVersion
+  )
 
   val ZooKeeper = "org.apache.zookeeper" % "zookeeper" % ZooKeeperVersion
 
+  val KafkaClient = "org.apache.kafka" % "kafka-clients" % KafkaVersion
+//  val KafkaServer = "org.apache.kafka" %% "kafka" % KafkaVersion // TODO remove
+
+  val ScalaTest = "org.scalatest" %% "scalatest" % ScalaTestVersion % Test
+
   val ScalaPreconditions = "ru.ars-co" %% "scala-preconditions" % ScalaPreconditionsVersion
+  val ScalaCommon = "ru.ars-co" %% "scala-common" % ScalaCommonVersion
 
+  val scala = Seq(ScalaPreconditions, ScalaCommon)
+  val logging = Seq(ScalaLogging)
 
-  val logging = Seq(ScalaLogging, Jcl2slf)
-  val testing = Seq(ScalaTest)
-  val kafka = Seq(KafkaClient, KafkaServer)
   val zookeeper = Seq(ZooKeeper)
-  val preconditions = Seq(ScalaPreconditions)
+  val kafka = Seq(KafkaClient)
 
+  val testing = Seq(ScalaTest) ++ LoggingImpl.map(_ % Test)
 }

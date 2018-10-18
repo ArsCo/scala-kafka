@@ -102,13 +102,19 @@ trait ProducerConfig extends CommonConfig {
     */
   def sslTruststore: Option[Ssl] = None
 
-
   /**
     * Gets producer `batch.size` parameter.
     *
     * @return default batch size in bytes. (non-null option of non-negative)
     */
   def batchSize: Option[Int] = None
+
+  /**
+    * Gets producer `client.id` parameter.
+    *
+    * @return // TODO
+    */
+  def clientId: Option[String] = None
 
   /** @inheritdoc */
   override def all: Map[String, Any] = {
@@ -122,7 +128,8 @@ trait ProducerConfig extends CommonConfig {
       ("retries", retries),
       ("enable.idempotence", idempotence),
       ("ssl.key.password", sslKeyPassword),
-      ("batch.size", batchSize)
+      ("batch.size", batchSize),
+      ("client.id", clientId)
     ) ++ toKeystoreMap(sslKeystore) ++ toTruststoreMap(sslTruststore)
 
     super.all ++ required ++ optional

@@ -25,7 +25,7 @@ import ars.common.enumeration.{EnumObject, EnumValue}
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-abstract sealed class CompressionType(val code: String) extends EnumValue[String]
+abstract sealed class CompressionType(override val code: String) extends EnumValue[String]
 
 object CompressionTypes extends EnumObject[CompressionType, String] {
   final case object None extends CompressionType("none")
@@ -33,5 +33,5 @@ object CompressionTypes extends EnumObject[CompressionType, String] {
   final case object Snappy extends CompressionType("snappy")
   final case object LZ4 extends CompressionType("lz4")
 
-  val values: Seq[CompressionType] = Seq(None, GZip, Snappy, LZ4)
+  override val values = Seq(None, GZip, Snappy, LZ4)
 }

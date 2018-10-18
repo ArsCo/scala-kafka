@@ -107,20 +107,22 @@ abstract class AbstractCommonSingleThreadConsumer[K, V](
     true
   }
 
-  /** @inheritdoc */
   override def pollTimeout: Duration = DefaultPollingTimeout.second
 
-  /** @inheritdoc */
   override def close(consumer: KafkaConsumer[K, V]): Unit = {
     !tryClose(consumer) && tryClose(consumer) // Close consumer (try twice if need)
     logger.error("The consuming was stopped.")
   }
 
-  /** @inheritdoc */
   override def process(consumer: KafkaConsumer[K, V]): Unit = {
-    val records = pollRecords(consumer)
-    val isSuccess = process(records)
-    if (isSuccess) consumer.commitSync()
+    try {
+      val records = pollRecords(consumer)
+      val isSuccess = process(records)
+      if (isSuccess) consumer.commitSync() // TODO:
+    } catch {
+      case e: Exception =>
+        logger.error("Exception in message processing", e)
+    }
   }
 
 

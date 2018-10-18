@@ -20,7 +20,7 @@ import java.io.Serializable
 import java.time.Instant
 import java.time.temporal.ChronoUnit.MINUTES
 
-import ars.common.enumeration.{EnumObject, SerializableIntEnumValue}
+import ars.common.enumeration.{AbstractSerializableIntEnumValue, EnumObject}
 import ars.kafka.config.{ConsumerConfig, Deserializers, ProducerConfig, Serializers}
 import ars.kafka.consumer.retry.RetryPolicy
 import ars.kafka.consumer.unpacker.HeaderBodyDeserializationUnpacker
@@ -29,7 +29,7 @@ import ars.kafka.producer.SerializationPackingProducer
 import ars.kafka.producer.packer.HeaderBodySerializationPacker
 
 import scala.concurrent.forkjoin.ThreadLocalRandom
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 /**
   *
@@ -43,7 +43,7 @@ object HeaderedIntegrationTest {
   case class TestBody(str: String, int: Int, date: Instant) extends Serializable
 
 
-  sealed abstract class TestHeader(value: Int) extends SerializableIntEnumValue[TestHeader, TestHeaders.type](value) {
+  sealed abstract class TestHeader(value: Int) extends AbstractSerializableIntEnumValue[TestHeader, TestHeaders.type](value) {
 //    def valueOf(code: Int): Try[TestHeader] = TestHeaders.valueOf(code)
   }
 
