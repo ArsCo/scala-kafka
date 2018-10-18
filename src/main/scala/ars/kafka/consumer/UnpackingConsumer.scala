@@ -57,7 +57,6 @@ trait UnpackingConsumer[SerKey, Key, SerValue, Value] extends SingleThreadConsum
   def processUnpacked(key: Option[Key], value: Value): ProcessCompletionStatus
 
 
-  /** @inheritdoc*/
   override def process(record: ConsumerRecord[SerKey, SerValue]): ProcessCompletionStatus = {
     val serValue = record.value()
     Option(record.key())

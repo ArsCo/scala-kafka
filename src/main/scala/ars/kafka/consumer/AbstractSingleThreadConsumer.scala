@@ -61,14 +61,12 @@ abstract class AbstractSingleThreadConsumer[K, V](
     */
   def this(config: ConsumerConfig, topic: String) = this(config, Seq(topic),  DefaultPollingTimeout.microsecond)
 
-  /** @inheritdoc */
   override def subscribe(consumer: KafkaConsumer[K, V]): Unit = {
     requireNotNull(consumer, "consumer")
 
     subscribe(consumer, topics)
   }
 
-  /** @inheritdoc */
   override def pollTimeout: Duration = timeout
 
   private[kafka] def subscribe(consumer: KafkaConsumer[K, V], topics: Seq[String]): Unit = {

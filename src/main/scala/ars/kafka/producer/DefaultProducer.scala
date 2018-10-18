@@ -61,16 +61,13 @@ class DefaultProducer[Key, Value](
     producer.close(duration.length, duration.unit)
   }
 
-  /** @inheritdoc */
   override def send(topic: String, value: Value): Future[RecordMetadata] = send(topic, None, value)
 
-  /** @inheritdoc */
   override def send(topic: String, key: Option[Key], value: Value): Future[RecordMetadata] = {
     val record = createRecord(topic, key, value)
     send(record)
   }
 
-  /** @inheritdoc */
   override def send(record: ProducerRecord[Key, Value]): Future[RecordMetadata] = {
     requireNotNull(record, "record")
 
@@ -108,23 +105,23 @@ class DefaultProducer[Key, Value](
   private var isTxInit = false
 
 
-  def inTransaction(block: => Unit): Unit = {
-    if (!isTxInit) {
-      producer.initTransactions()
-    }
-
-    producer.beginTransaction()
-    try {
-      block()
-      producer.commitTransaction()
-    } catch {
-      case e: KafkaException =>
-        producer.abortTransaction()
-
-    }
-
-
-  }
+//  def inTransaction(block: => Unit): Unit = {
+//    if (!isTxInit) {
+//      producer.initTransactions()
+//    }
+//
+//    producer.beginTransaction()
+//    try {
+//      block()
+//      producer.commitTransaction()
+//    } catch {
+//      case e: KafkaException =>
+//        producer.abortTransaction()
+//
+//    }
+//
+//
+//  }
 
 
   /// TODO Tx end

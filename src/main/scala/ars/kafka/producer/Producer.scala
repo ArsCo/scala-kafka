@@ -108,7 +108,7 @@ trait Producer[Key, Value] extends AutoCloseable {
   def close(duration: Duration): Unit
 
 
-  def inTransaction(block: => Unit): Unit // TODO
+//  def inTransaction(block: => Unit): Unit // TODO
 
 }
 

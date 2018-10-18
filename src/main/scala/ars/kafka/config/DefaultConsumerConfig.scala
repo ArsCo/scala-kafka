@@ -24,31 +24,14 @@ import ars.precondition.require.Require.Default._
   * @since 0.0.1
   */
 case class DefaultConsumerConfig(
-    /** @inheritdoc */
     override val deserializers: Deserializers,
-
-    /** @inheritdoc */
     override val bootstrapServers: Seq[Server],
-
-    /** @inheritdoc */
     override val groupId: String,
-
-    /** @inheritdoc */
     override val minFetchBytes: Option[Int] = None,
-
-    /** @inheritdoc */
     override val heartbeatInterval: Option[Int] = None,
-
-    /** @inheritdoc */
     override val maxPartitionFetchBytes: Option[Int] = None,
-
-    /** @inheritdoc */
     override val sessionTimeout: Option[Int] = None,
-
-    /** @inheritdoc */
     override val autoCommit: Option[Boolean] = None,
-
-    /** @inheritdoc */
     override val raw: Map[String, Any] = Map()
 ) extends ConsumerConfig {
 

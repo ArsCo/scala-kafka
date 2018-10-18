@@ -50,7 +50,6 @@ abstract class AbstractCommonSingleThreadConsumer[K, V](
   @volatile
   private var consumer: KafkaConsumer[K, V] = _
 
-  /** @inheritdoc */
   override def start(): Unit = {
     if (wasStarted) throw new IllegalStateException("Already was started.")
     if (isStop) throw new IllegalStateException("Already was stopped.")
@@ -70,25 +69,21 @@ abstract class AbstractCommonSingleThreadConsumer[K, V](
     }
   }
 
-  /** @inheritdoc */
   override def createConsumer(config: ConsumerConfig): KafkaConsumer[K, V] = {
     val consumer = new KafkaConsumer[K, V](KafkaUtils.toProps(config.all))
     logger.info("New consumer instance was created.")
     consumer
   }
 
-  /** @inheritdoc */
   override def stop(): Unit = {
     if (!wasStarted) throw new IllegalStateException("Not started yet.")
     isStop = true
   }
 
-  /** @inheritdoc */
   override def handleUnexpectedException(e: Exception): Unit = {
     logger.error("There's an unexpected exception was thrown.", e)
   }
 
-  /** @inheritdoc */
   override def process(records: ConsumerRecords[K, V]): Boolean = { // TODO: ProcessCompletionStatus
     for (record <- records.asScala) {
       try {
@@ -144,7 +139,6 @@ abstract class AbstractCommonSingleThreadConsumer[K, V](
     )
   }
 
-  /** @inheritdoc */
   override def nativeConsumer: KafkaConsumer[K, V] = {
     if (!wasStarted) throw new IllegalStateException("Not started yet.")
     if (isStop) throw new IllegalStateException("Already was stopped.")

@@ -32,7 +32,6 @@ class HeaderBodySerializationPacker[Header <: Serializable, Body <: Serializable
   extends HeaderBodyPacker[Header, Body, Array[Byte]]
   with SerializationPacker[(Header, Body)] {
 
-  /** @inheritdoc */
   override def pack(from: (Header, Body)): Try[Array[Byte]] = {
     requireNotNull(from, "from")
     requireNotNull(from._1, "from._1")
@@ -42,7 +41,6 @@ class HeaderBodySerializationPacker[Header <: Serializable, Body <: Serializable
     pack(header, body)
   }
 
-  /** @inheritdoc */
   override def pack(header: Header, body: Body): Try[Array[Byte]] = {
     (packHeader(header), packBody(body)) match {
       case (Success(h), Success(b)) =>
@@ -68,12 +66,10 @@ class HeaderBodySerializationPacker[Header <: Serializable, Body <: Serializable
     }
   }
 
-  /** @inheritdoc */
   override def packBody(body: Body): Try[Array[Byte]] = {
     serializeValue(body)
   }
 
-  /** @inheritdoc */
   override def packHeader(header: Header): Try[Array[Byte]] = {
     serializeValue(header).map { headerBytes =>
       val headerSizeBytes = ByteUtils.int2bytes(headerBytes.length)

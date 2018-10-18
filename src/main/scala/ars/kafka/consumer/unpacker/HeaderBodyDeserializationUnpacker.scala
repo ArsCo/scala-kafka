@@ -31,7 +31,6 @@ class HeaderBodyDeserializationUnpacker[Header <: AnyRef, Body <: AnyRef](bodyDe
   private[this] val HeaderSizeArrayLength = 4
   private[this] val HeaderOffset = HeaderSizeArrayLength
 
-  /** @inheritdoc */
   override def split(from: Bytes): Try[(Bytes, Bytes)] = {
     Try {
       val headerSizeBytes = from.slice(0, HeaderOffset)
@@ -45,16 +44,13 @@ class HeaderBodyDeserializationUnpacker[Header <: AnyRef, Body <: AnyRef](bodyDe
     }
   }
 
-  /** @inheritdoc */
   override def unpackHeader(headerBytes: Bytes): Try[Header] = {
     SerializationUtils.deserializeObject[Header](headerBytes)
   }
 
-  /** @inheritdoc */
   override def unpackBody(bodyBytes: Bytes): Try[Body] = {
     SerializationUtils.deserializeObject(bodyBytes)
   }
 
-  /** @inheritdoc */
   override def isUnpackBody(header: Header): Boolean = bodyDeserializationPredicate(header)
 }

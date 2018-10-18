@@ -45,7 +45,6 @@ trait BeforeAfterRecordProcessing[K, V] extends SingleThreadConsumer[K, V] {
     */
   def afterProcess(record: ConsumerRecord[K, V]): ProcessCompletionStatus
 
-  /** @inheritdoc */
   abstract override def process(record: ConsumerRecord[K, V]): ProcessCompletionStatus = {
 
     // TODO Algorithm

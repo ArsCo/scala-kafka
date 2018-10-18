@@ -24,40 +24,17 @@ import ars.precondition.require.Require.Default._
   * @since 0.0.1
   */
 case class DefaultProducerConfig(
-    /** @inheritdoc */
     override val serializers: Serializers,
-
-    /** @inheritdoc */
     override val bootstrapServers: Seq[Server],
-
-    /** @inheritdoc */
     override val asks: Option[ProducerAck] = None,
-
-    /** @inheritdoc */
     override val memoryBuffer: Option[Long] = None,
-
-    /** @inheritdoc */
     override val compressionType: Option[CompressionType] = None,
-
-    /** @inheritdoc */
     override val retries: Option[Int] = None,
-
-    /** @inheritdoc */
     override val idempotence: Option[Boolean] = None,
-
-    /** @inheritdoc */
     override val sslKeyPassword: Option[String] = None,
-
-    /** @inheritdoc */
     override val sslKeystore: Option[Ssl] = None,
-
-    /** @inheritdoc */
     override val sslTruststore: Option[Ssl] = None,
-
-    /** @inheritdoc */
     override val batchSize: Option[Int] = None,
-
-    /** @inheritdoc */
     override val raw: Map[String, Any] = Map()
 ) extends ProducerConfig {
 

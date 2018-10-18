@@ -116,7 +116,6 @@ trait ProducerConfig extends CommonConfig {
     */
   def clientId: Option[String] = None
 
-  /** @inheritdoc */
   override def all: Map[String, Any] = {
 
     val required = toMap(serializers) ++ toMap(bootstrapServers :_*)

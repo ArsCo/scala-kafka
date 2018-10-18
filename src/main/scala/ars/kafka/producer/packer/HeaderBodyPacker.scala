@@ -32,7 +32,6 @@ import scala.util.Try
   */
 trait HeaderBodyPacker[Header, Body, To] extends Packer[(Header, Body), To] {
 
-  /** @inheritdoc */
   override def pack(from: (Header, Body)): Try[To] = {
     requireNotNull(from, "from")
     requireNotNull(from._1, "from._1")
