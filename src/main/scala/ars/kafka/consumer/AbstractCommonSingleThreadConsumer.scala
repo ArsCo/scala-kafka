@@ -27,6 +27,7 @@ import org.apache.kafka.common.{KafkaException, TopicPartition}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
+import scala.util.control.NonFatal
 
 /** Abstract common consumer.
   *
@@ -58,10 +59,10 @@ abstract class AbstractCommonSingleThreadConsumer[K, V](
 
     consumer = createConsumer(config)
 
-    startConsummingLoop()
+    startConsumingLoop()
   }
 
-  protected def startConsummingLoop(): Unit = {
+  protected def startConsumingLoop(): Unit = {
     try {
       subscribe(consumer)
       while (!isStop) process(consumer)
@@ -123,9 +124,14 @@ abstract class AbstractCommonSingleThreadConsumer[K, V](
 
   /** @inheritdoc */
   override def process(consumer: KafkaConsumer[K, V]): Unit = {
-    val records = pollRecords(consumer)
-    val isSuccess = process(records)
-    if (isSuccess) consumer.commitSync()
+    try {
+      val records = pollRecords(consumer)
+      val isSuccess = process(records)
+      if (isSuccess) consumer.commitSync()
+    } catch {
+      case NonFatal(e) =>
+        logger.error("Error:", e)
+    }
   }
 
 
