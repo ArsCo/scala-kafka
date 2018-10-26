@@ -32,7 +32,7 @@ trait StartAndStopConsumer[Key, Value] extends AbstractCommonSingleThreadConsume
 
   override protected def startConsumingLoop(): Unit = {
     Try(interceptStart())
-    super.startConsumingLoop()
+    Try(super.startConsumingLoop())
     Try(interceptStop())
   }
 }
