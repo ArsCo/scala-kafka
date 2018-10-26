@@ -28,7 +28,7 @@ trait BeforeAfterRecordsProcessing[K, V] extends SingleThreadConsumer[K, V] {
   def beforeRecordsProcess(records: ConsumerRecords[K, V]): ProcessCompletionStatus
   def afterRecordsProcess(records: ConsumerRecords[K, V]): ProcessCompletionStatus
 
-  override def process(records: ConsumerRecords[K, V]): Boolean = {
+  abstract override def process(records: ConsumerRecords[K, V]): Boolean = {
     // TODO Algorithm
     val beforeStatus = beforeRecordsProcess(records)
     if (beforeStatus != ProcessCompletionStatuses.Success)
