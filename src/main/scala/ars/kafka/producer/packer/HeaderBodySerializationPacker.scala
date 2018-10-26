@@ -28,7 +28,7 @@ import scala.util.{Failure, Success, Try}
   * @author Arsen Ibragimov (ars)
   * @since 0.0.1
   */
-class HeaderBodySerializationPacker[Header <: AnyRef, Body <: AnyRef]
+class HeaderBodySerializationPacker[Header <: Serializable, Body <: Serializable]
   extends HeaderBodyPacker[Header, Body, Array[Byte]]
   with SerializationPacker[(Header, Body)] {
 
